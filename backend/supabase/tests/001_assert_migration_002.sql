@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0004.
+-- Assertions for migrations 0001-0005.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0004.
+-- Tables expected after 0001-0005.
 do $$
 declare
   missing_count integer;
@@ -19,7 +19,11 @@ begin
       ('public', 'ownership_history'),
       ('public', 'listings'),
       ('public', 'orders'),
-      ('public', 'order_items')
+      ('public', 'order_items'),
+      ('public', 'escrow_records'),
+      ('public', 'subscriptions'),
+      ('public', 'refund_requests'),
+      ('public', 'disputes')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -46,7 +50,12 @@ begin
       ('public', 'visibility_mode'),
       ('public', 'authentication_status'),
       ('public', 'listing_status'),
-      ('public', 'order_status')
+      ('public', 'order_status'),
+      ('public', 'escrow_status'),
+      ('public', 'subscription_status'),
+      ('public', 'refund_status'),
+      ('public', 'dispute_type'),
+      ('public', 'dispute_status')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -81,7 +90,17 @@ begin
       ('listings', 'listings_seller_profile_id_fkey'),
       ('orders', 'orders_buyer_profile_id_fkey'),
       ('order_items', 'order_items_order_id_fkey'),
-      ('order_items', 'order_items_artwork_id_fkey')
+      ('order_items', 'order_items_artwork_id_fkey'),
+      ('escrow_records', 'escrow_records_order_id_fkey'),
+      ('subscriptions', 'subscriptions_profile_id_fkey'),
+      ('refund_requests', 'refund_requests_order_id_fkey'),
+      ('refund_requests', 'refund_requests_requester_profile_id_fkey'),
+      ('refund_requests', 'refund_requests_reviewed_by_profile_id_fkey'),
+      ('disputes', 'disputes_order_id_fkey'),
+      ('disputes', 'disputes_artwork_id_fkey'),
+      ('disputes', 'disputes_opened_by_profile_id_fkey'),
+      ('disputes', 'disputes_assigned_admin_profile_id_fkey'),
+      ('disputes', 'disputes_order_item_artwork_fk')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -111,7 +130,9 @@ begin
       ('public', 'certificates_certificate_number_key'),
       ('public', 'ownership_history_one_current_owner_idx'),
       ('public', 'orders_order_number_key'),
-      ('public', 'order_items_order_id_artwork_id_key')
+      ('public', 'order_items_order_id_artwork_id_key'),
+      ('public', 'escrow_records_order_id_key'),
+      ('public', 'subscriptions_one_active_per_profile_idx')
   ) as expected(schema_name, object_name)
   left join (
     select connamespace as namespace_oid, conname as object_name
@@ -131,7 +152,7 @@ begin
 end
 $$;
 
--- Index checks for Migration 002 + 003 performance paths.
+-- Index checks for Migration 002 + 003 + 004 performance paths.
 do $$
 declare
   missing_count integer;
@@ -157,7 +178,19 @@ begin
       ('orders_status_idx'),
       ('orders_placed_at_idx'),
       ('order_items_order_id_idx'),
-      ('order_items_artwork_id_idx')
+      ('order_items_artwork_id_idx'),
+      ('escrow_records_status_idx'),
+      ('subscriptions_profile_id_idx'),
+      ('subscriptions_status_idx'),
+      ('subscriptions_one_active_per_profile_idx'),
+      ('refund_requests_order_id_idx'),
+      ('refund_requests_requester_profile_id_idx'),
+      ('refund_requests_status_idx'),
+      ('disputes_order_id_idx'),
+      ('disputes_artwork_id_idx'),
+      ('disputes_opened_by_profile_id_idx'),
+      ('disputes_assigned_admin_profile_id_idx'),
+      ('disputes_type_status_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'

@@ -1,12 +1,13 @@
-# Backend DB Validation Plan (Migrations 0001-0004)
+# Backend DB Validation Plan (Migrations 0001-0005)
 
-This plan validates Migration 001 through Migration 003 against a **real PostgreSQL/Supabase-compatible database** before any Migration 004 work.
+This plan validates Migration 001 through Migration 004 against a **real PostgreSQL/Supabase-compatible database** before any Migration 005 work.
 
 ## Scope
 - `0001_enum_types.sql`
 - `0002_migration_001_foundation.sql`
 - `0003_migration_002_artwork_core.sql`
 - `0004_migration_003_marketplace_orders.sql`
+- `0005_migration_004_financial_flows.sql`
 
 ## Goals
 1. Verify migrations apply cleanly in order.
@@ -30,7 +31,7 @@ scripts/db_validate_migrations.sh
 The script performs:
 1. DB reset (drop/create).
 2. Bootstrap minimal `auth.users` for local validation.
-3. Apply `0001`, `0002`, `0003`, `0004` in strict order.
+3. Apply `0001`, `0002`, `0003`, `0004`, `0005` in strict order.
 4. Execute SQL assertions (`backend/supabase/tests/001_assert_migration_002.sql`).
 5. Repeat full reset and apply to validate reproducibility.
 
@@ -70,5 +71,5 @@ Optional:
 - enum creation in actual catalog
 - any runtime syntax/compatibility issues
 
-## Pre-Migration 004 gate
-Do not start Migration 004 until this validation passes in a real database environment.
+## Pre-Migration 005 gate
+Do not start Migration 005 until this validation passes in a real database environment.
