@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0003.
+-- Assertions for migrations 0001-0004.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0003.
+-- Tables expected after 0001-0004.
 do $$
 declare
   missing_count integer;
@@ -16,7 +16,10 @@ begin
       ('public', 'artwork_assets'),
       ('public', 'artwork_authentication'),
       ('public', 'certificates'),
-      ('public', 'ownership_history')
+      ('public', 'ownership_history'),
+      ('public', 'listings'),
+      ('public', 'orders'),
+      ('public', 'order_items')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -41,7 +44,9 @@ begin
       ('public', 'profile_status'),
       ('public', 'publish_status'),
       ('public', 'visibility_mode'),
-      ('public', 'authentication_status')
+      ('public', 'authentication_status'),
+      ('public', 'listing_status'),
+      ('public', 'order_status')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -71,7 +76,12 @@ begin
       ('certificates', 'certificates_artwork_id_fkey'),
       ('certificates', 'certificates_issued_by_profile_id_fkey'),
       ('ownership_history', 'ownership_history_artwork_id_fkey'),
-      ('ownership_history', 'ownership_history_owner_profile_id_fkey')
+      ('ownership_history', 'ownership_history_owner_profile_id_fkey'),
+      ('listings', 'listings_artwork_id_fkey'),
+      ('listings', 'listings_seller_profile_id_fkey'),
+      ('orders', 'orders_buyer_profile_id_fkey'),
+      ('order_items', 'order_items_order_id_fkey'),
+      ('order_items', 'order_items_artwork_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -99,7 +109,9 @@ begin
       ('public', 'artwork_assets_unique_path_per_artwork'),
       ('public', 'artwork_authentication_artwork_id_key'),
       ('public', 'certificates_certificate_number_key'),
-      ('public', 'ownership_history_one_current_owner_idx')
+      ('public', 'ownership_history_one_current_owner_idx'),
+      ('public', 'orders_order_number_key'),
+      ('public', 'order_items_order_id_artwork_id_key')
   ) as expected(schema_name, object_name)
   left join (
     select connamespace as namespace_oid, conname as object_name
@@ -119,7 +131,7 @@ begin
 end
 $$;
 
--- Index checks for Migration 002 performance paths.
+-- Index checks for Migration 002 + 003 performance paths.
 do $$
 declare
   missing_count integer;
@@ -137,7 +149,15 @@ begin
       ('certificates_artwork_id_idx'),
       ('ownership_history_artwork_id_idx'),
       ('ownership_history_owner_profile_id_idx'),
-      ('ownership_history_one_current_owner_idx')
+      ('ownership_history_one_current_owner_idx'),
+      ('listings_artwork_id_idx'),
+      ('listings_seller_profile_id_idx'),
+      ('listings_status_idx'),
+      ('orders_buyer_profile_id_idx'),
+      ('orders_status_idx'),
+      ('orders_placed_at_idx'),
+      ('order_items_order_id_idx'),
+      ('order_items_artwork_id_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
