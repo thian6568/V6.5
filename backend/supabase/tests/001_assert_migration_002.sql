@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0005.
+-- Assertions for migrations 0001-0007.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0005.
+-- Tables expected after 0001-0007.
 do $$
 declare
   missing_count integer;
@@ -23,7 +23,11 @@ begin
       ('public', 'escrow_records'),
       ('public', 'subscriptions'),
       ('public', 'refund_requests'),
-      ('public', 'disputes')
+      ('public', 'disputes'),
+      ('public', 'shipping_records'),
+      ('public', 'insurance_records'),
+      ('public', 'environments'),
+      ('public', 'environment_assignments')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -55,7 +59,12 @@ begin
       ('public', 'subscription_status'),
       ('public', 'refund_status'),
       ('public', 'dispute_type'),
-      ('public', 'dispute_status')
+      ('public', 'dispute_status'),
+      ('public', 'shipping_status'),
+      ('public', 'insurance_status'),
+      ('public', 'environment_status'),
+      ('public', 'performance_tier'),
+      ('public', 'assignment_status')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -100,7 +109,11 @@ begin
       ('disputes', 'disputes_artwork_id_fkey'),
       ('disputes', 'disputes_opened_by_profile_id_fkey'),
       ('disputes', 'disputes_assigned_admin_profile_id_fkey'),
-      ('disputes', 'disputes_order_item_artwork_fk')
+      ('disputes', 'disputes_order_item_artwork_fk'),
+      ('shipping_records', 'shipping_records_order_id_fkey'),
+      ('insurance_records', 'insurance_records_order_id_fkey'),
+      ('environment_assignments', 'environment_assignments_environment_id_fkey'),
+      ('environment_assignments', 'environment_assignments_artwork_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -132,7 +145,13 @@ begin
       ('public', 'orders_order_number_key'),
       ('public', 'order_items_order_id_artwork_id_key'),
       ('public', 'escrow_records_order_id_key'),
-      ('public', 'subscriptions_one_active_per_profile_idx')
+      ('public', 'subscriptions_one_active_per_profile_idx'),
+      ('public', 'shipping_records_order_id_key'),
+      ('public', 'insurance_records_order_id_key'),
+      ('public', 'environments_name_key'),
+      ('public', 'environments_runtime_key_key'),
+      ('public', 'environment_assignments_unique_active_artwork_idx'),
+      ('public', 'environment_assignments_unique_active_anchor_idx')
   ) as expected(schema_name, object_name)
   left join (
     select connamespace as namespace_oid, conname as object_name
@@ -190,7 +209,18 @@ begin
       ('disputes_artwork_id_idx'),
       ('disputes_opened_by_profile_id_idx'),
       ('disputes_assigned_admin_profile_id_idx'),
-      ('disputes_type_status_idx')
+      ('disputes_type_status_idx'),
+      ('shipping_records_status_idx'),
+      ('shipping_records_tracking_number_idx'),
+      ('insurance_records_status_idx'),
+      ('insurance_records_policy_number_idx'),
+      ('environments_status_idx'),
+      ('environments_performance_tier_idx'),
+      ('environment_assignments_environment_id_idx'),
+      ('environment_assignments_artwork_id_idx'),
+      ('environment_assignments_status_idx'),
+      ('environment_assignments_unique_active_artwork_idx'),
+      ('environment_assignments_unique_active_anchor_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
