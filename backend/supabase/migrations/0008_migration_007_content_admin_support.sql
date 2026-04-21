@@ -7,7 +7,7 @@
 
 -- Enums required for Migration 007.
 -- Compatibility helper for plain PostgreSQL CI where auth.uid() may be unavailable.
-do $$
+do $do$
 begin
   if not exists (select 1 from pg_namespace where nspname = 'auth') then
     execute 'create schema auth';
@@ -32,7 +32,7 @@ begin
     $fn$;
   end if;
 end
-$$;
+$do$;
 
 do $$
 begin
