@@ -6,6 +6,34 @@
 -- - keep homepage/admin content separate from environment assignment logic.
 
 -- Enums required for Migration 007.
+-- Compatibility helper for plain PostgreSQL CI where auth.uid() may be unavailable.
+do $$
+begin
+  if not exists (select 1 from pg_namespace where nspname = 'auth') then
+    execute 'create schema auth';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'auth'
+      and p.proname = 'uid'
+      and p.pronargs = 0
+  ) then
+    execute $fn$
+      create function auth.uid()
+      returns uuid
+      language sql
+      stable
+      as $$
+        select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+      $$;
+    $fn$;
+  end if;
+end
+$$;
+
 do $$
 begin
   if not exists (
