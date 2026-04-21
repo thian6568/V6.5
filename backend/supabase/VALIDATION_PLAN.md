@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0007)
+# Backend DB Validation Plan (Migrations 0001-0008)
 
-This plan validates Migration 001 through Migration 006 against a **real PostgreSQL/Supabase-compatible database** before any Migration 007 work.
+This plan validates Migration 001 through Migration 007 against a **real PostgreSQL/Supabase-compatible database** before any Migration 008+ work.
 
 ## Scope
 - `0001_enum_types.sql`
@@ -10,6 +10,7 @@ This plan validates Migration 001 through Migration 006 against a **real Postgre
 - `0005_migration_004_financial_flows.sql`
 - `0006_migration_005_logistics.sql`
 - `0007_migration_006_environments.sql`
+- `0008_migration_007_content_admin_support.sql`
 
 ## Goals
 1. Verify migrations apply cleanly in order.

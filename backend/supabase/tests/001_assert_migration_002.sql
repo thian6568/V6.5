@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0007.
+-- Assertions for migrations 0001-0008.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0007.
+-- Tables expected after 0001-0008.
 do $$
 declare
   missing_count integer;
@@ -27,7 +27,10 @@ begin
       ('public', 'shipping_records'),
       ('public', 'insurance_records'),
       ('public', 'environments'),
-      ('public', 'environment_assignments')
+      ('public', 'environment_assignments'),
+      ('public', 'homepage_content'),
+      ('public', 'featured_content'),
+      ('public', 'notifications')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -64,7 +67,12 @@ begin
       ('public', 'insurance_status'),
       ('public', 'environment_status'),
       ('public', 'performance_tier'),
-      ('public', 'assignment_status')
+      ('public', 'assignment_status'),
+      ('public', 'homepage_visibility_status'),
+      ('public', 'featured_content_type'),
+      ('public', 'featured_content_status'),
+      ('public', 'notification_type'),
+      ('public', 'notification_status')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -113,7 +121,15 @@ begin
       ('shipping_records', 'shipping_records_order_id_fkey'),
       ('insurance_records', 'insurance_records_order_id_fkey'),
       ('environment_assignments', 'environment_assignments_environment_id_fkey'),
-      ('environment_assignments', 'environment_assignments_artwork_id_fkey')
+      ('environment_assignments', 'environment_assignments_artwork_id_fkey'),
+      ('homepage_content', 'homepage_content_created_by_profile_id_fkey'),
+      ('homepage_content', 'homepage_content_updated_by_profile_id_fkey'),
+      ('featured_content', 'featured_content_artwork_id_fkey'),
+      ('featured_content', 'featured_content_created_by_profile_id_fkey'),
+      ('featured_content', 'featured_content_updated_by_profile_id_fkey'),
+      ('notifications', 'notifications_profile_id_fkey'),
+      ('notifications', 'notifications_artwork_id_fkey'),
+      ('notifications', 'notifications_created_by_profile_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -151,7 +167,9 @@ begin
       ('public', 'environments_name_key'),
       ('public', 'environments_runtime_key_key'),
       ('public', 'environment_assignments_unique_active_artwork_idx'),
-      ('public', 'environment_assignments_unique_active_anchor_idx')
+      ('public', 'environment_assignments_unique_active_anchor_idx'),
+      ('public', 'homepage_content_slug_key'),
+      ('public', 'featured_content_one_active_artwork_idx')
   ) as expected(schema_name, object_name)
   left join (
     select connamespace as namespace_oid, conname as object_name
@@ -220,7 +238,18 @@ begin
       ('environment_assignments_artwork_id_idx'),
       ('environment_assignments_status_idx'),
       ('environment_assignments_unique_active_artwork_idx'),
-      ('environment_assignments_unique_active_anchor_idx')
+      ('environment_assignments_unique_active_anchor_idx'),
+      ('homepage_content_visibility_status_idx'),
+      ('homepage_content_sort_order_idx'),
+      ('featured_content_status_idx'),
+      ('featured_content_type_idx'),
+      ('featured_content_sort_order_idx'),
+      ('featured_content_artwork_id_idx'),
+      ('featured_content_one_active_artwork_idx'),
+      ('notifications_profile_id_idx'),
+      ('notifications_status_idx'),
+      ('notifications_notification_type_idx'),
+      ('notifications_profile_status_created_at_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
