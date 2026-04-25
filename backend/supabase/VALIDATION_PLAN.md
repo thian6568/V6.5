@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0011)
+# Backend DB Validation Plan (Migrations 0001-0012)
 
-This plan validates Migration 001 through Migration 010, implemented in files 0001 through 0011, against a **real PostgreSQL/Supabase-compatible database** before any Migration 011+ work.
+This plan validates Migration 001 through Migration 011, implemented in files 0001 through 0012, against a **real PostgreSQL/Supabase-compatible database** before any Migration 012+ work.
 
 ## Scope
 - `0001_enum_types.sql`
@@ -14,6 +14,7 @@ This plan validates Migration 001 through Migration 010, implemented in files 00
 - `0009_migration_008_submission_review.sql`
 - `0010_migration_009_marketplace_navigation.sql`
 - `0011_migration_010_marketplace_filters_tags_search.sql`
+- `0012_migration_011_marketplace_sort_facets_saved_search.sql`
 
 ## Goals
 1. Verify migrations apply cleanly in order.
