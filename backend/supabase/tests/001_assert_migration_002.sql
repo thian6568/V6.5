@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0009.
+-- Assertions for migrations 0001-0011.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0009.
+-- Tables expected after 0001-0011.
 do $$
 declare
   missing_count integer;
@@ -31,7 +31,14 @@ begin
       ('public', 'homepage_content'),
       ('public', 'featured_content'),
       ('public', 'notifications'),
-      ('public', 'review_events')
+      ('public', 'review_events'),
+      ('public', 'marketplace_categories'),
+      ('public', 'artwork_category_assignments'),
+      ('public', 'marketplace_sections'),
+      ('public', 'marketplace_section_items'),
+      ('public', 'marketplace_tags'),
+      ('public', 'artwork_tag_assignments'),
+      ('public', 'listing_filter_metadata')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -76,7 +83,14 @@ begin
       ('public', 'notification_status'),
       ('public', 'submission_review_status'),
       ('public', 'publication_status'),
-      ('public', 'review_event_type')
+      ('public', 'review_event_type'),
+      ('public', 'marketplace_section_type'),
+      ('public', 'marketplace_visibility_status'),
+      ('public', 'marketplace_tag_type'),
+      ('public', 'marketplace_price_bucket'),
+      ('public', 'marketplace_size_bucket'),
+      ('public', 'marketplace_orientation'),
+      ('public', 'marketplace_availability_bucket')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -136,7 +150,18 @@ begin
       ('notifications', 'notifications_created_by_profile_id_fkey'),
       ('review_events', 'review_events_actor_profile_id_fkey'),
       ('review_events', 'review_events_artwork_id_fkey'),
-      ('review_events', 'review_events_listing_id_fkey')
+      ('review_events', 'review_events_listing_id_fkey'),
+      ('marketplace_categories', 'marketplace_categories_parent_category_id_fkey'),
+      ('artwork_category_assignments', 'artwork_category_assignments_artwork_id_fkey'),
+      ('artwork_category_assignments', 'artwork_category_assignments_category_id_fkey'),
+      ('marketplace_sections', 'marketplace_sections_created_by_profile_id_fkey'),
+      ('marketplace_sections', 'marketplace_sections_updated_by_profile_id_fkey'),
+      ('marketplace_section_items', 'marketplace_section_items_section_id_fkey'),
+      ('marketplace_section_items', 'marketplace_section_items_artwork_id_fkey'),
+      ('marketplace_section_items', 'marketplace_section_items_listing_id_fkey'),
+      ('artwork_tag_assignments', 'artwork_tag_assignments_artwork_id_fkey'),
+      ('artwork_tag_assignments', 'artwork_tag_assignments_tag_id_fkey'),
+      ('listing_filter_metadata', 'listing_filter_metadata_listing_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -151,7 +176,7 @@ begin
 end
 $$;
 
--- Check constraint checks including Migration 008.
+-- Check constraint checks including Migration 008, 009, and 010.
 do $$
 declare
   missing_count integer;
@@ -176,7 +201,21 @@ begin
       ('listings', 'listings_reviewed_after_submitted_chk'),
       ('listings', 'listings_published_after_scheduled_chk'),
       ('listings', 'listings_price_parity_with_legacy_chk'),
-      ('review_events', 'review_events_exactly_one_target_chk')
+      ('listings', 'listings_discovery_rank_nonnegative_chk'),
+      ('listings', 'listings_available_window_chk'),
+      ('review_events', 'review_events_exactly_one_target_chk'),
+      ('marketplace_categories', 'marketplace_categories_slug_nonblank_chk'),
+      ('marketplace_categories', 'marketplace_categories_name_nonblank_chk'),
+      ('marketplace_categories', 'marketplace_categories_sort_order_nonnegative_chk'),
+      ('marketplace_sections', 'marketplace_sections_slug_nonblank_chk'),
+      ('marketplace_sections', 'marketplace_sections_title_nonblank_chk'),
+      ('marketplace_sections', 'marketplace_sections_sort_order_nonnegative_chk'),
+      ('marketplace_section_items', 'marketplace_section_items_exactly_one_target_chk'),
+      ('marketplace_tags', 'marketplace_tags_slug_nonblank_chk'),
+      ('marketplace_tags', 'marketplace_tags_name_nonblank_chk'),
+      ('marketplace_tags', 'marketplace_tags_sort_order_nonnegative_chk'),
+      ('listings', 'listings_search_keywords_nonblank_chk'),
+      ('listings', 'listings_search_document_nonblank_chk')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -216,7 +255,14 @@ begin
       ('public', 'environment_assignments_unique_active_artwork_idx'),
       ('public', 'environment_assignments_unique_active_anchor_idx'),
       ('public', 'homepage_content_slug_key'),
-      ('public', 'featured_content_one_active_artwork_idx')
+      ('public', 'featured_content_one_active_artwork_idx'),
+      ('public', 'marketplace_categories_slug_key'),
+      ('public', 'artwork_category_assignments_artwork_id_category_id_key'),
+      ('public', 'artwork_category_assignments_one_primary_per_artwork_idx'),
+      ('public', 'marketplace_sections_slug_key'),
+      ('public', 'marketplace_tags_slug_key'),
+      ('public', 'artwork_tag_assignments_artwork_id_tag_id_key'),
+      ('public', 'listing_filter_metadata_listing_id_key')
   ) as expected(schema_name, object_name)
   left join (
     select connamespace as namespace_oid, conname as object_name
@@ -236,7 +282,7 @@ begin
 end
 $$;
 
--- Index checks for Migration 002 + 003 + 004 performance paths.
+-- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 performance paths.
 do $$
 declare
   missing_count integer;
@@ -306,7 +352,36 @@ begin
       ('review_events_actor_profile_id_idx'),
       ('review_events_artwork_id_idx'),
       ('review_events_listing_id_idx'),
-      ('review_events_event_type_idx')
+      ('review_events_event_type_idx'),
+      ('marketplace_categories_parent_category_id_idx'),
+      ('marketplace_categories_is_active_idx'),
+      ('marketplace_categories_is_active_sort_order_idx'),
+      ('artwork_category_assignments_artwork_id_idx'),
+      ('artwork_category_assignments_category_id_idx'),
+      ('artwork_category_assignments_one_primary_per_artwork_idx'),
+      ('marketplace_sections_section_type_idx'),
+      ('marketplace_sections_is_active_idx'),
+      ('marketplace_sections_is_active_sort_order_idx'),
+      ('marketplace_section_items_section_id_idx'),
+      ('marketplace_section_items_artwork_id_idx'),
+      ('marketplace_section_items_listing_id_idx'),
+      ('marketplace_section_items_section_id_sort_order_idx'),
+      ('listings_marketplace_visibility_idx'),
+      ('listings_is_featured_idx'),
+      ('listings_discovery_rank_idx'),
+      ('listings_available_from_idx'),
+      ('listings_available_until_idx'),
+      ('marketplace_tags_tag_type_idx'),
+      ('marketplace_tags_is_active_idx'),
+      ('marketplace_tags_is_active_sort_order_idx'),
+      ('artwork_tag_assignments_artwork_id_idx'),
+      ('artwork_tag_assignments_tag_id_idx'),
+      ('artwork_tag_assignments_primary_artwork_idx'),
+      ('listing_filter_metadata_price_bucket_idx'),
+      ('listing_filter_metadata_size_bucket_idx'),
+      ('listing_filter_metadata_orientation_idx'),
+      ('listing_filter_metadata_availability_bucket_idx'),
+      ('listings_is_searchable_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
