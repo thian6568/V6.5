@@ -1,51 +1,32 @@
-name: backend-db-validation
+# Backend DB Validation Plan (Migrations 0001-0009)
 
-on:
-  workflow_dispatch:
-  push:
-    paths:
-      - 'backend/supabase/migrations/**'
-      - 'backend/supabase/tests/**'
-      - 'scripts/db_validate_migrations.sh'
-      - '.github/workflows/backend-db-validation.yml'
-  pull_request:
-    paths:
-      - 'backend/supabase/migrations/**'
-      - 'backend/supabase/tests/**'
-      - 'scripts/db_validate_migrations.sh'
-      - '.github/workflows/backend-db-validation.yml'
+This plan validates Migration 001 through Migration 008 against a **real PostgreSQL/Supabase-compatible database** before any Migration 009+ work.
 
-jobs:
-  postgres-validate:
-    runs-on: ubuntu-latest
+## Scope
+- `0001_enum_types.sql`
+- `0002_migration_001_foundation.sql`
+- `0003_migration_002_artwork_core.sql`
+- `0004_migration_003_marketplace_orders.sql`
+- `0005_migration_004_financial_flows.sql`
+- `0006_migration_005_logistics.sql`
+- `0007_migration_006_environments.sql`
+- `0008_migration_007_content_admin_support.sql`
+- `0009_migration_008_submission_review.sql`
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+## Goals
+1. Verify migrations apply cleanly in order.
+2. Verify schema reset/re-apply behavior.
+3. Verify enum creation.
+4. Verify foreign keys.
+5. Verify unique constraints.
+6. Verify indexes.
+7. Re-confirm shared artwork rule:
+   - one main artwork identity table (`public.artworks`)
+   - no VR-only artwork table
+   - no second upload identity path
 
-    env:
-      PGPASSWORD: postgres
-      DB_HOST: 127.0.0.1
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_NAME: artist_in_art_migration_validation
+## Validation workflow
+Run:
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-
-      - name: Validate migrations 0001-0008
-        run: scripts/db_validate_migrations.sh
+```bash
+scripts/db_validate_migrations.sh

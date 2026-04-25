@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0008.
+-- Assertions for migrations 0001-0009.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0008.
+-- Tables expected after 0001-0009.
 do $$
 declare
   missing_count integer;
@@ -30,7 +30,8 @@ begin
       ('public', 'environment_assignments'),
       ('public', 'homepage_content'),
       ('public', 'featured_content'),
-      ('public', 'notifications')
+      ('public', 'notifications'),
+      ('public', 'review_events')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -72,7 +73,10 @@ begin
       ('public', 'featured_content_type'),
       ('public', 'featured_content_status'),
       ('public', 'notification_type'),
-      ('public', 'notification_status')
+      ('public', 'notification_status'),
+      ('public', 'submission_review_status'),
+      ('public', 'publication_status'),
+      ('public', 'review_event_type')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -129,7 +133,10 @@ begin
       ('featured_content', 'featured_content_updated_by_profile_id_fkey'),
       ('notifications', 'notifications_profile_id_fkey'),
       ('notifications', 'notifications_artwork_id_fkey'),
-      ('notifications', 'notifications_created_by_profile_id_fkey')
+      ('notifications', 'notifications_created_by_profile_id_fkey'),
+      ('review_events', 'review_events_actor_profile_id_fkey'),
+      ('review_events', 'review_events_artwork_id_fkey'),
+      ('review_events', 'review_events_listing_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -140,6 +147,46 @@ begin
 
   if missing_count > 0 then
     raise exception 'Missing expected foreign keys after migration apply: %', missing_count;
+  end if;
+end
+$$;
+
+-- Check constraint checks including Migration 008.
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('artworks', 'artworks_width_cm_positive_chk'),
+      ('artworks', 'artworks_height_cm_positive_chk'),
+      ('artworks', 'artworks_thickness_cm_positive_chk'),
+      ('artworks', 'artworks_width_in_positive_chk'),
+      ('artworks', 'artworks_height_in_positive_chk'),
+      ('artworks', 'artworks_thickness_in_positive_chk'),
+      ('artworks', 'artworks_reviewed_after_submitted_chk'),
+      ('artworks', 'artworks_published_after_scheduled_chk'),
+      ('listings', 'listings_price_amount_nonnegative_chk'),
+      ('listings', 'listings_price_currency_upper_chk'),
+      ('listings', 'listings_sale_price_amount_nonnegative_chk'),
+      ('listings', 'listings_sale_price_currency_upper_chk'),
+      ('listings', 'listings_sale_price_not_above_price_chk'),
+      ('listings', 'listings_sale_currency_requires_sale_price_chk'),
+      ('listings', 'listings_reviewed_after_submitted_chk'),
+      ('listings', 'listings_published_after_scheduled_chk'),
+      ('listings', 'listings_price_parity_with_legacy_chk'),
+      ('review_events', 'review_events_exactly_one_target_chk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'CHECK'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing expected check constraints after migration apply: %', missing_count;
   end if;
 end
 $$;
@@ -249,7 +296,17 @@ begin
       ('notifications_profile_id_idx'),
       ('notifications_status_idx'),
       ('notifications_notification_type_idx'),
-      ('notifications_profile_status_created_at_idx')
+      ('notifications_profile_status_created_at_idx'),
+      ('artworks_review_status_idx'),
+      ('artworks_publication_status_idx'),
+      ('artworks_scheduled_publish_at_idx'),
+      ('listings_review_status_idx'),
+      ('listings_publication_status_idx'),
+      ('listings_scheduled_publish_at_idx'),
+      ('review_events_actor_profile_id_idx'),
+      ('review_events_artwork_id_idx'),
+      ('review_events_listing_id_idx'),
+      ('review_events_event_type_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
