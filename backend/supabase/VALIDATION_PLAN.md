@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0009)
+# Backend DB Validation Plan (Migrations 0001-0011)
 
-This plan validates Migration 001 through Migration 008 against a **real PostgreSQL/Supabase-compatible database** before any Migration 009+ work.
+This plan validates Migration 001 through Migration 010, implemented in files 0001 through 0011, against a **real PostgreSQL/Supabase-compatible database** before any Migration 011+ work.
 
 ## Scope
 - `0001_enum_types.sql`
@@ -12,6 +12,8 @@ This plan validates Migration 001 through Migration 008 against a **real Postgre
 - `0007_migration_006_environments.sql`
 - `0008_migration_007_content_admin_support.sql`
 - `0009_migration_008_submission_review.sql`
+- `0010_migration_009_marketplace_navigation.sql`
+- `0011_migration_010_marketplace_filters_tags_search.sql`
 
 ## Goals
 1. Verify migrations apply cleanly in order.
@@ -19,8 +21,9 @@ This plan validates Migration 001 through Migration 008 against a **real Postgre
 3. Verify enum creation.
 4. Verify foreign keys.
 5. Verify unique constraints.
-6. Verify indexes.
-7. Re-confirm shared artwork rule:
+6. Verify check constraints.
+7. Verify indexes.
+8. Re-confirm shared artwork rule:
    - one main artwork identity table (`public.artworks`)
    - no VR-only artwork table
    - no second upload identity path
