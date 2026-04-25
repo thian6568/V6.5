@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0011.
+-- Assertions for migrations 0001-0012.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0011.
+-- Tables expected after 0001-0012.
 do $$
 declare
   missing_count integer;
@@ -38,7 +38,11 @@ begin
       ('public', 'marketplace_section_items'),
       ('public', 'marketplace_tags'),
       ('public', 'artwork_tag_assignments'),
-      ('public', 'listing_filter_metadata')
+      ('public', 'listing_filter_metadata'),
+      ('public', 'marketplace_sort_options'),
+      ('public', 'marketplace_facet_configs'),
+      ('public', 'saved_searches'),
+      ('public', 'saved_search_filters')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -90,7 +94,10 @@ begin
       ('public', 'marketplace_price_bucket'),
       ('public', 'marketplace_size_bucket'),
       ('public', 'marketplace_orientation'),
-      ('public', 'marketplace_availability_bucket')
+      ('public', 'marketplace_availability_bucket'),
+      ('public', 'marketplace_sort_direction'),
+      ('public', 'marketplace_sort_key'),
+      ('public', 'marketplace_facet_source_type')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -161,7 +168,10 @@ begin
       ('marketplace_section_items', 'marketplace_section_items_listing_id_fkey'),
       ('artwork_tag_assignments', 'artwork_tag_assignments_artwork_id_fkey'),
       ('artwork_tag_assignments', 'artwork_tag_assignments_tag_id_fkey'),
-      ('listing_filter_metadata', 'listing_filter_metadata_listing_id_fkey')
+      ('listing_filter_metadata', 'listing_filter_metadata_listing_id_fkey'),
+      ('saved_searches', 'saved_searches_profile_id_fkey'),
+      ('saved_searches', 'saved_searches_sort_option_id_fkey'),
+      ('saved_search_filters', 'saved_search_filters_saved_search_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -176,7 +186,7 @@ begin
 end
 $$;
 
--- Check constraint checks including Migration 008, 009, and 010.
+-- Check constraint checks including Migration 008, 009, 010, and 011.
 do $$
 declare
   missing_count integer;
@@ -215,7 +225,17 @@ begin
       ('marketplace_tags', 'marketplace_tags_name_nonblank_chk'),
       ('marketplace_tags', 'marketplace_tags_sort_order_nonnegative_chk'),
       ('listings', 'listings_search_keywords_nonblank_chk'),
-      ('listings', 'listings_search_document_nonblank_chk')
+      ('listings', 'listings_search_document_nonblank_chk'),
+      ('marketplace_sort_options', 'marketplace_sort_options_slug_nonblank_chk'),
+      ('marketplace_sort_options', 'marketplace_sort_options_name_nonblank_chk'),
+      ('marketplace_sort_options', 'marketplace_sort_options_sort_order_nonnegative_chk'),
+      ('marketplace_facet_configs', 'marketplace_facet_configs_facet_key_nonblank_chk'),
+      ('marketplace_facet_configs', 'marketplace_facet_configs_label_nonblank_chk'),
+      ('marketplace_facet_configs', 'marketplace_facet_configs_sort_order_nonnegative_chk'),
+      ('saved_searches', 'saved_searches_name_nonblank_chk'),
+      ('saved_searches', 'saved_searches_query_text_nonblank_chk'),
+      ('saved_search_filters', 'saved_search_filters_filter_key_nonblank_chk'),
+      ('saved_search_filters', 'saved_search_filters_filter_value_nonblank_chk')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -262,7 +282,9 @@ begin
       ('public', 'marketplace_sections_slug_key'),
       ('public', 'marketplace_tags_slug_key'),
       ('public', 'artwork_tag_assignments_artwork_id_tag_id_key'),
-      ('public', 'listing_filter_metadata_listing_id_key')
+      ('public', 'listing_filter_metadata_listing_id_key'),
+      ('public', 'marketplace_sort_options_slug_key'),
+      ('public', 'marketplace_facet_configs_facet_key_key')
   ) as expected(schema_name, object_name)
   left join (
     select connamespace as namespace_oid, conname as object_name
@@ -282,7 +304,7 @@ begin
 end
 $$;
 
--- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 performance paths.
+-- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 performance paths.
 do $$
 declare
   missing_count integer;
@@ -381,7 +403,19 @@ begin
       ('listing_filter_metadata_size_bucket_idx'),
       ('listing_filter_metadata_orientation_idx'),
       ('listing_filter_metadata_availability_bucket_idx'),
-      ('listings_is_searchable_idx')
+      ('listings_is_searchable_idx'),
+      ('marketplace_sort_options_is_active_idx'),
+      ('marketplace_sort_options_is_active_sort_order_idx'),
+      ('marketplace_sort_options_sort_key_idx'),
+      ('marketplace_facet_configs_source_type_idx'),
+      ('marketplace_facet_configs_is_active_idx'),
+      ('marketplace_facet_configs_is_active_sort_order_idx'),
+      ('saved_searches_profile_id_idx'),
+      ('saved_searches_sort_option_id_idx'),
+      ('saved_searches_profile_id_is_active_idx'),
+      ('saved_search_filters_saved_search_id_idx'),
+      ('saved_search_filters_filter_key_idx'),
+      ('saved_search_filters_saved_search_id_filter_key_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
