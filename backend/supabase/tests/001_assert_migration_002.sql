@@ -2,13 +2,11 @@
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
 -- Tables expected after 0001-0012.
--- Migration 011 marketplace sort, facets, and saved search foundation.
--- Scope: marketplace sort configuration, facet configuration, and saved searches.
--- Guardrails:
--- - artworks remains the single artwork identity path.
--- - no second artwork table or upload identity path.
--- - no coupling to environments or homepage/admin content logic.
-
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
 -- Enums required for Migration 011.
 do $$
 begin
