@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0012.
+-- Assertions for migrations 0001-0013.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0012.
+-- Tables expected after 0001-0013.
 do $$
 declare
   missing_count integer;
