@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0012)
+# Backend DB Validation Plan (Migrations 0001-0013)
 
-This plan validates Migration 001 through Migration 011, implemented in files 0001 through 0012, against a **real PostgreSQL/Supabase-compatible database** before any Migration 012+ work.
+This plan validates Migration 001 through Migration 012, implemented in files 0001 through 0013, against a **real PostgreSQL/Supabase-compatible database** before any Migration 013+ work.
 
 ## Scope
 - `0001_enum_types.sql`
@@ -15,6 +15,7 @@ This plan validates Migration 001 through Migration 011, implemented in files 00
 - `0010_migration_009_marketplace_navigation.sql`
 - `0011_migration_010_marketplace_filters_tags_search.sql`
 - `0012_migration_011_marketplace_sort_facets_saved_search.sql`
+- `0013_migration_012_marketplace_collections_wishlist.sql`
 
 ## Goals
 1. Verify migrations apply cleanly in order.
@@ -29,8 +30,25 @@ This plan validates Migration 001 through Migration 011, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
+## Migration 012 coverage
+Migration 012 validates the backend foundation for:
+
+- `public.marketplace_collections`
+- `public.marketplace_collection_items`
+- `public.wishlists`
+- `public.wishlist_items`
+
+Guardrails preserved:
+
+- `public.artworks` remains the single artwork identity path
+- no second artwork table
+- no second upload path
+- no coupling to environments
+- no coupling to homepage/admin content logic
+- backend foundation only, no frontend implementation
+
 ## Validation workflow
 Run:
 
 ```bash
-scripts/db_validate_migrations.sh
+bash scripts/db_validate_migrations.sh
