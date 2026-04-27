@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0013.
+-- Assertions for migrations 0001-0014.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0013.
+-- Tables expected after 0001-0014.
 do $$
 declare
   missing_count integer;
@@ -42,7 +42,13 @@ begin
       ('public', 'marketplace_sort_options'),
       ('public', 'marketplace_facet_configs'),
       ('public', 'saved_searches'),
-      ('public', 'saved_search_filters')
+      ('public', 'saved_search_filters'),
+      ('public', 'marketplace_collections'),
+      ('public', 'marketplace_collection_items'),
+      ('public', 'wishlists'),
+      ('public', 'wishlist_items'),
+      ('public', 'marketplace_share_links'),
+      ('public', 'marketplace_share_events')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -97,7 +103,8 @@ begin
       ('public', 'marketplace_availability_bucket'),
       ('public', 'marketplace_sort_direction'),
       ('public', 'marketplace_sort_key'),
-      ('public', 'marketplace_facet_source_type')
+      ('public', 'marketplace_facet_source_type'),
+      ('public', 'marketplace_share_channel')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -171,7 +178,21 @@ begin
       ('listing_filter_metadata', 'listing_filter_metadata_listing_id_fkey'),
       ('saved_searches', 'saved_searches_profile_id_fkey'),
       ('saved_searches', 'saved_searches_sort_option_id_fkey'),
-      ('saved_search_filters', 'saved_search_filters_saved_search_id_fkey')
+      ('saved_search_filters', 'saved_search_filters_saved_search_id_fkey'),
+      ('marketplace_collections', 'marketplace_collections_created_by_profile_id_fkey'),
+      ('marketplace_collections', 'marketplace_collections_updated_by_profile_id_fkey'),
+      ('marketplace_collection_items', 'marketplace_collection_items_collection_id_fkey'),
+      ('marketplace_collection_items', 'marketplace_collection_items_artwork_id_fkey'),
+      ('marketplace_collection_items', 'marketplace_collection_items_listing_id_fkey'),
+      ('wishlists', 'wishlists_profile_id_fkey'),
+      ('wishlist_items', 'wishlist_items_wishlist_id_fkey'),
+      ('wishlist_items', 'wishlist_items_artwork_id_fkey'),
+      ('wishlist_items', 'wishlist_items_listing_id_fkey'),
+      ('marketplace_share_links', 'marketplace_share_links_profile_id_fkey'),
+      ('marketplace_share_links', 'marketplace_share_links_artwork_id_fkey'),
+      ('marketplace_share_links', 'marketplace_share_links_listing_id_fkey'),
+      ('marketplace_share_events', 'marketplace_share_events_share_link_id_fkey'),
+      ('marketplace_share_events', 'marketplace_share_events_viewer_profile_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -186,7 +207,7 @@ begin
 end
 $$;
 
--- Check constraint checks including Migration 008, 009, 010, and 011.
+-- Check constraint checks including Migration 008, 009, 010, 011, 012, and 013.
 do $$
 declare
   missing_count integer;
@@ -235,7 +256,19 @@ begin
       ('saved_searches', 'saved_searches_name_nonblank_chk'),
       ('saved_searches', 'saved_searches_query_text_nonblank_chk'),
       ('saved_search_filters', 'saved_search_filters_filter_key_nonblank_chk'),
-      ('saved_search_filters', 'saved_search_filters_filter_value_nonblank_chk')
+      ('saved_search_filters', 'saved_search_filters_filter_value_nonblank_chk'),
+      ('marketplace_collections', 'marketplace_collections_slug_nonblank_chk'),
+      ('marketplace_collections', 'marketplace_collections_title_nonblank_chk'),
+      ('marketplace_collections', 'marketplace_collections_sort_order_nonnegative_chk'),
+      ('marketplace_collection_items', 'marketplace_collection_items_sort_order_nonnegative_chk'),
+      ('marketplace_collection_items', 'marketplace_collection_items_exactly_one_target_chk'),
+      ('wishlists', 'wishlists_name_nonblank_chk'),
+      ('wishlist_items', 'wishlist_items_exactly_one_target_chk'),
+      ('marketplace_share_links', 'marketplace_share_links_exactly_one_target_chk'),
+      ('marketplace_share_links', 'marketplace_share_links_share_token_nonblank_chk'),
+      ('marketplace_share_links', 'marketplace_share_links_destination_url_nonblank_chk'),
+      ('marketplace_share_events', 'marketplace_share_events_event_type_nonblank_chk'),
+      ('marketplace_share_events', 'marketplace_share_events_metadata_object_chk')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -284,7 +317,14 @@ begin
       ('public', 'artwork_tag_assignments_artwork_id_tag_id_key'),
       ('public', 'listing_filter_metadata_listing_id_key'),
       ('public', 'marketplace_sort_options_slug_key'),
-      ('public', 'marketplace_facet_configs_facet_key_key')
+      ('public', 'marketplace_facet_configs_facet_key_key'),
+      ('public', 'marketplace_collections_slug_key'),
+      ('public', 'marketplace_collection_items_collection_artwork_unique_idx'),
+      ('public', 'marketplace_collection_items_collection_listing_unique_idx'),
+      ('public', 'wishlists_one_default_per_profile_idx'),
+      ('public', 'wishlist_items_wishlist_artwork_unique_idx'),
+      ('public', 'wishlist_items_wishlist_listing_unique_idx'),
+      ('public', 'marketplace_share_links_share_token_key')
   ) as expected(schema_name, object_name)
   left join (
     select connamespace as namespace_oid, conname as object_name
@@ -304,7 +344,7 @@ begin
 end
 $$;
 
--- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 performance paths.
+-- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 + 012 + 013 performance paths.
 do $$
 declare
   missing_count integer;
@@ -415,7 +455,30 @@ begin
       ('saved_searches_profile_id_is_active_idx'),
       ('saved_search_filters_saved_search_id_idx'),
       ('saved_search_filters_filter_key_idx'),
-      ('saved_search_filters_saved_search_id_filter_key_idx')
+      ('saved_search_filters_saved_search_id_filter_key_idx'),
+      ('marketplace_collections_created_by_profile_id_idx'),
+      ('marketplace_collections_updated_by_profile_id_idx'),
+      ('marketplace_collections_is_active_idx'),
+      ('marketplace_collections_is_active_sort_order_idx'),
+      ('marketplace_collection_items_collection_id_idx'),
+      ('marketplace_collection_items_artwork_id_idx'),
+      ('marketplace_collection_items_listing_id_idx'),
+      ('marketplace_collection_items_collection_id_sort_order_idx'),
+      ('wishlists_profile_id_idx'),
+      ('wishlists_profile_id_is_active_idx'),
+      ('wishlist_items_wishlist_id_idx'),
+      ('wishlist_items_artwork_id_idx'),
+      ('wishlist_items_listing_id_idx'),
+      ('marketplace_share_links_profile_id_idx'),
+      ('marketplace_share_links_artwork_id_idx'),
+      ('marketplace_share_links_listing_id_idx'),
+      ('marketplace_share_links_share_channel_idx'),
+      ('marketplace_share_links_is_active_idx'),
+      ('marketplace_share_links_expires_at_idx'),
+      ('marketplace_share_events_share_link_id_idx'),
+      ('marketplace_share_events_viewer_profile_id_idx'),
+      ('marketplace_share_events_event_type_idx'),
+      ('marketplace_share_events_created_at_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
