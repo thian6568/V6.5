@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0013)
+# Backend DB Validation Plan (Migrations 0001-0014)
 
-This plan validates Migration 001 through Migration 012, implemented in files 0001 through 0013, against a **real PostgreSQL/Supabase-compatible database** before any Migration 013+ work.
+This plan validates Migration 001 through Migration 013, implemented in files 0001 through 0014, against a **real PostgreSQL/Supabase-compatible database** before any Migration 014+ work.
 
 ## Scope
 - `0001_enum_types.sql`
@@ -16,27 +16,28 @@ This plan validates Migration 001 through Migration 012, implemented in files 00
 - `0011_migration_010_marketplace_filters_tags_search.sql`
 - `0012_migration_011_marketplace_sort_facets_saved_search.sql`
 - `0013_migration_012_marketplace_collections_wishlist.sql`
+- `0014_migration_013_marketplace_social_sharing.sql`
 
 ## Goals
 1. Verify migrations apply cleanly in order.
 2. Verify schema reset/re-apply behavior.
 3. Verify enum creation.
 4. Verify foreign keys.
-5. Verify unique constraints.
+5. Verify unique constraints and unique indexes.
 6. Verify check constraints.
-7. Verify indexes.
+7. Verify performance indexes.
 8. Re-confirm shared artwork rule:
-   - one main artwork identity table (`public.artworks`)
+   - one main artwork identity table: `public.artworks`
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 012 coverage
-Migration 012 validates the backend foundation for:
+## Migration 013 coverage
 
-- `public.marketplace_collections`
-- `public.marketplace_collection_items`
-- `public.wishlists`
-- `public.wishlist_items`
+Migration 013 validates the backend foundation for marketplace social sharing:
+
+- `public.marketplace_share_channel`
+- `public.marketplace_share_links`
+- `public.marketplace_share_events`
 
 Guardrails preserved:
 
@@ -46,8 +47,10 @@ Guardrails preserved:
 - no coupling to environments
 - no coupling to homepage/admin content logic
 - backend foundation only, no frontend implementation
+- no AI, bots, or agents
 
 ## Validation workflow
+
 Run:
 
 ```bash
