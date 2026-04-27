@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0015.
+-- Assertions for migrations 0001-0016.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0015.
+-- Tables expected after 0001-0016.
 do $$
 declare
   missing_count integer;
@@ -50,7 +50,9 @@ begin
       ('public', 'marketplace_share_links'),
       ('public', 'marketplace_share_events'),
       ('public', 'marketplace_inquiries'),
-      ('public', 'marketplace_inquiry_messages')
+      ('public', 'marketplace_inquiry_messages'),
+      ('public', 'marketplace_offers'),
+      ('public', 'marketplace_offer_events')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -109,7 +111,9 @@ begin
       ('public', 'marketplace_share_channel'),
       ('public', 'marketplace_inquiry_status'),
       ('public', 'marketplace_inquiry_sender_role'),
-      ('public', 'marketplace_contact_request_type')
+      ('public', 'marketplace_contact_request_type'),
+      ('public', 'marketplace_offer_status'),
+      ('public', 'marketplace_offer_event_type')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -203,7 +207,14 @@ begin
       ('marketplace_inquiries', 'marketplace_inquiries_artwork_id_fkey'),
       ('marketplace_inquiries', 'marketplace_inquiries_listing_id_fkey'),
       ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_inquiry_id_fkey'),
-      ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_sender_profile_id_fkey')
+      ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_sender_profile_id_fkey'),
+      ('marketplace_offers', 'marketplace_offers_buyer_profile_id_fkey'),
+      ('marketplace_offers', 'marketplace_offers_seller_profile_id_fkey'),
+      ('marketplace_offers', 'marketplace_offers_artwork_id_fkey'),
+      ('marketplace_offers', 'marketplace_offers_listing_id_fkey'),
+      ('marketplace_offers', 'marketplace_offers_inquiry_id_fkey'),
+      ('marketplace_offer_events', 'marketplace_offer_events_offer_id_fkey'),
+      ('marketplace_offer_events', 'marketplace_offer_events_actor_profile_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -218,7 +229,7 @@ begin
 end
 $$;
 
--- Check constraint checks including Migration 008, 009, 010, 011, 012, 013, and 014.
+-- Check constraint checks including Migration 008, 009, 010, 011, 012, 013, 014, and 015.
 do $$
 declare
   missing_count integer;
@@ -285,7 +296,19 @@ begin
       ('marketplace_inquiries', 'marketplace_inquiries_subject_nonblank_chk'),
       ('marketplace_inquiries', 'marketplace_inquiries_initial_message_nonblank_chk'),
       ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_message_body_nonblank_chk'),
-      ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_metadata_object_chk')
+      ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_metadata_object_chk'),
+      ('marketplace_offers', 'marketplace_offers_exactly_one_target_chk'),
+      ('marketplace_offers', 'marketplace_offers_buyer_seller_different_chk'),
+      ('marketplace_offers', 'marketplace_offers_offer_amount_positive_chk'),
+      ('marketplace_offers', 'marketplace_offers_offer_currency_code_chk'),
+      ('marketplace_offers', 'marketplace_offers_terminal_timestamps_exclusive_chk'),
+      ('marketplace_offers', 'marketplace_offers_accepted_status_timestamp_chk'),
+      ('marketplace_offers', 'marketplace_offers_declined_status_timestamp_chk'),
+      ('marketplace_offers', 'marketplace_offers_cancelled_status_timestamp_chk'),
+      ('marketplace_offer_events', 'marketplace_offer_events_event_amount_positive_chk'),
+      ('marketplace_offer_events', 'marketplace_offer_events_event_currency_code_chk'),
+      ('marketplace_offer_events', 'marketplace_offer_events_note_nonblank_chk'),
+      ('marketplace_offer_events', 'marketplace_offer_events_metadata_object_chk')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -361,7 +384,7 @@ begin
 end
 $$;
 
--- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 + 012 + 013 + 014 performance paths.
+-- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 + 012 + 013 + 014 + 015 performance paths.
 do $$
 declare
   missing_count integer;
@@ -507,7 +530,20 @@ begin
       ('marketplace_inquiry_messages_inquiry_id_idx'),
       ('marketplace_inquiry_messages_sender_profile_id_idx'),
       ('marketplace_inquiry_messages_sender_role_idx'),
-      ('marketplace_inquiry_messages_created_at_idx')
+      ('marketplace_inquiry_messages_created_at_idx'),
+      ('marketplace_offers_buyer_profile_id_idx'),
+      ('marketplace_offers_seller_profile_id_idx'),
+      ('marketplace_offers_artwork_id_idx'),
+      ('marketplace_offers_listing_id_idx'),
+      ('marketplace_offers_inquiry_id_idx'),
+      ('marketplace_offers_status_idx'),
+      ('marketplace_offers_expires_at_idx'),
+      ('marketplace_offers_last_event_at_idx'),
+      ('marketplace_offers_created_at_idx'),
+      ('marketplace_offer_events_offer_id_idx'),
+      ('marketplace_offer_events_actor_profile_id_idx'),
+      ('marketplace_offer_events_event_type_idx'),
+      ('marketplace_offer_events_created_at_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
