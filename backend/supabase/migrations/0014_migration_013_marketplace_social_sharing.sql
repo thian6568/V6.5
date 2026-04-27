@@ -1,68 +1,104 @@
-#!/usr/bin/env bash
-set -euo pipefail
+-- Migration 013 marketplace social sharing foundation.
+-- Scope: marketplace share links and share event tracking.
+-- Guardrails:
+-- - artworks remains the single artwork identity path.
+-- - no second artwork table or upload identity path.
+-- - no coupling to environments or homepage/admin content logic.
+-- - backend foundation only; no frontend/UI implementation.
+-- - no AI, bots, or agents.
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MIGRATIONS_DIR="$ROOT_DIR/backend/supabase/migrations"
-TESTS_DIR="$ROOT_DIR/backend/supabase/tests"
-DB_NAME="${DB_NAME:-artist_in_art_migration_validation}"
-DB_USER="${DB_USER:-postgres}"
-DB_HOST="${DB_HOST:-127.0.0.1}"
-DB_PORT="${DB_PORT:-5432}"
-PSQL=(psql -v ON_ERROR_STOP=1 -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER")
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where n.nspname = 'public'
+      and t.typname = 'marketplace_share_channel'
+  ) then
+    create type public.marketplace_share_channel as enum (
+      'direct_link',
+      'email',
+      'whatsapp',
+      'facebook',
+      'instagram',
+      'x',
+      'linkedin',
+      'pinterest',
+      'other'
+    );
+  end if;
+end
+$$;
 
-require_command() {
-  if ! command -v "$1" >/dev/null 2>&1; then
-    echo "ERROR: required command not found: $1" >&2
-    exit 1
-  fi
-}
+create table public.marketplace_share_links (
+  id bigint generated always as identity primary key,
+  profile_id bigint references public.profiles(id) on delete set null,
+  artwork_id bigint references public.artworks(id) on delete cascade,
+  listing_id bigint references public.listings(id) on delete cascade,
+  share_token text not null,
+  share_channel public.marketplace_share_channel not null default 'direct_link',
+  destination_url text,
+  expires_at timestamptz,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint marketplace_share_links_exactly_one_target_chk check (
+    num_nonnulls(artwork_id, listing_id) = 1
+  ),
+  constraint marketplace_share_links_share_token_nonblank_chk check (
+    btrim(share_token) <> ''
+  ),
+  constraint marketplace_share_links_destination_url_nonblank_chk check (
+    destination_url is null or btrim(destination_url) <> ''
+  ),
+  constraint marketplace_share_links_share_token_key unique (share_token)
+);
 
-apply_migrations() {
-  echo "==> Bootstrapping local auth schema"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$TESTS_DIR/000_bootstrap_auth.sql"
+create index marketplace_share_links_profile_id_idx
+  on public.marketplace_share_links(profile_id);
 
-  echo "==> Applying migrations 0001, 0002, 0003, 0004, 0005, 0006, 0007, 0008, 0009, 0010, 0011, 0012, 0013, 0014"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0001_enum_types.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0002_migration_001_foundation.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0003_migration_002_artwork_core.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0004_migration_003_marketplace_orders.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0005_migration_004_financial_flows.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0006_migration_005_logistics.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0007_migration_006_environments.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0008_migration_007_content_admin_support.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0009_migration_008_submission_review.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0010_migration_009_marketplace_navigation.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0011_migration_010_marketplace_filters_tags_search.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0012_migration_011_marketplace_sort_facets_saved_search.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0013_migration_012_marketplace_collections_wishlist.sql"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0014_migration_013_marketplace_social_sharing.sql"
-}
+create index marketplace_share_links_artwork_id_idx
+  on public.marketplace_share_links(artwork_id);
 
-run_assertions() {
-  echo "==> Running enum/FK/unique/index/shared-artwork assertions"
-  "${PSQL[@]}" -d "$DB_NAME" -f "$TESTS_DIR/001_assert_migration_002.sql"
-}
+create index marketplace_share_links_listing_id_idx
+  on public.marketplace_share_links(listing_id);
 
-main() {
-  require_command createdb
-  require_command dropdb
-  require_command psql
+create index marketplace_share_links_share_channel_idx
+  on public.marketplace_share_links(share_channel);
 
-  echo "==> Resetting database: $DB_NAME"
-  dropdb --if-exists -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" "$DB_NAME"
-  createdb -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" "$DB_NAME"
+create index marketplace_share_links_is_active_idx
+  on public.marketplace_share_links(is_active);
 
-  echo "==> Pass 1: fresh apply"
-  apply_migrations
-  run_assertions
+create index marketplace_share_links_expires_at_idx
+  on public.marketplace_share_links(expires_at);
 
-  echo "==> Pass 2: schema reset + re-apply"
-  dropdb -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" "$DB_NAME"
-  createdb -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" "$DB_NAME"
-  apply_migrations
-  run_assertions
+create table public.marketplace_share_events (
+  id bigint generated always as identity primary key,
+  share_link_id bigint not null references public.marketplace_share_links(id) on delete cascade,
+  viewer_profile_id bigint references public.profiles(id) on delete set null,
+  event_type text not null default 'view',
+  referrer text,
+  user_agent text,
+  ip_hash text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  constraint marketplace_share_events_event_type_nonblank_chk check (
+    btrim(event_type) <> ''
+  ),
+  constraint marketplace_share_events_metadata_object_chk check (
+    jsonb_typeof(metadata) = 'object'
+  )
+);
 
-  echo "SUCCESS: migrations 0001-0014 and Migration 008/009/010/011/012/013 assertions validated."
-}
+create index marketplace_share_events_share_link_id_idx
+  on public.marketplace_share_events(share_link_id);
 
-main "$@"
+create index marketplace_share_events_viewer_profile_id_idx
+  on public.marketplace_share_events(viewer_profile_id);
+
+create index marketplace_share_events_event_type_idx
+  on public.marketplace_share_events(event_type);
+
+create index marketplace_share_events_created_at_idx
+  on public.marketplace_share_events(created_at);
