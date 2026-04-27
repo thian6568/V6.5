@@ -4,19 +4,19 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'backend/supabase/migrations/**'
-      - 'backend/supabase/tests/**'
-      - 'scripts/db_validate_migrations.sh'
-      - '.github/workflows/backend-db-validation.yml'
+      - "backend/supabase/migrations/**"
+      - "backend/supabase/tests/**"
+      - "scripts/db_validate_migrations.sh"
+      - ".github/workflows/backend-db-validation.yml"
   pull_request:
     paths:
-      - 'backend/supabase/migrations/**'
-      - 'backend/supabase/tests/**'
-      - 'scripts/db_validate_migrations.sh'
-      - '.github/workflows/backend-db-validation.yml'
+      - "backend/supabase/migrations/**"
+      - "backend/supabase/tests/**"
+      - "scripts/db_validate_migrations.sh"
+      - ".github/workflows/backend-db-validation.yml"
 
 jobs:
-  postgres-validate:
+  postgres_validate:
     runs-on: ubuntu-latest
 
     services:
@@ -26,7 +26,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
-          - 5432:5432
+          - "5432:5432"
         options: >-
           --health-cmd "pg_isready -U postgres"
           --health-interval 10s
@@ -47,5 +47,5 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-     - name: Validate migrations 0001-0014
+      - name: Validate migrations 0001-0014
         run: bash scripts/db_validate_migrations.sh
