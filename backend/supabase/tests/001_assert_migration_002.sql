@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0014.
+-- Assertions for migrations 0001-0015.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0014.
+-- Tables expected after 0001-0015.
 do $$
 declare
   missing_count integer;
@@ -48,7 +48,9 @@ begin
       ('public', 'wishlists'),
       ('public', 'wishlist_items'),
       ('public', 'marketplace_share_links'),
-      ('public', 'marketplace_share_events')
+      ('public', 'marketplace_share_events'),
+      ('public', 'marketplace_inquiries'),
+      ('public', 'marketplace_inquiry_messages')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -104,7 +106,10 @@ begin
       ('public', 'marketplace_sort_direction'),
       ('public', 'marketplace_sort_key'),
       ('public', 'marketplace_facet_source_type'),
-      ('public', 'marketplace_share_channel')
+      ('public', 'marketplace_share_channel'),
+      ('public', 'marketplace_inquiry_status'),
+      ('public', 'marketplace_inquiry_sender_role'),
+      ('public', 'marketplace_contact_request_type')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -192,7 +197,13 @@ begin
       ('marketplace_share_links', 'marketplace_share_links_artwork_id_fkey'),
       ('marketplace_share_links', 'marketplace_share_links_listing_id_fkey'),
       ('marketplace_share_events', 'marketplace_share_events_share_link_id_fkey'),
-      ('marketplace_share_events', 'marketplace_share_events_viewer_profile_id_fkey')
+      ('marketplace_share_events', 'marketplace_share_events_viewer_profile_id_fkey'),
+      ('marketplace_inquiries', 'marketplace_inquiries_buyer_profile_id_fkey'),
+      ('marketplace_inquiries', 'marketplace_inquiries_seller_profile_id_fkey'),
+      ('marketplace_inquiries', 'marketplace_inquiries_artwork_id_fkey'),
+      ('marketplace_inquiries', 'marketplace_inquiries_listing_id_fkey'),
+      ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_inquiry_id_fkey'),
+      ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_sender_profile_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -207,7 +218,7 @@ begin
 end
 $$;
 
--- Check constraint checks including Migration 008, 009, 010, 011, 012, and 013.
+-- Check constraint checks including Migration 008, 009, 010, 011, 012, 013, and 014.
 do $$
 declare
   missing_count integer;
@@ -268,7 +279,13 @@ begin
       ('marketplace_share_links', 'marketplace_share_links_share_token_nonblank_chk'),
       ('marketplace_share_links', 'marketplace_share_links_destination_url_nonblank_chk'),
       ('marketplace_share_events', 'marketplace_share_events_event_type_nonblank_chk'),
-      ('marketplace_share_events', 'marketplace_share_events_metadata_object_chk')
+      ('marketplace_share_events', 'marketplace_share_events_metadata_object_chk'),
+      ('marketplace_inquiries', 'marketplace_inquiries_exactly_one_target_chk'),
+      ('marketplace_inquiries', 'marketplace_inquiries_buyer_seller_different_chk'),
+      ('marketplace_inquiries', 'marketplace_inquiries_subject_nonblank_chk'),
+      ('marketplace_inquiries', 'marketplace_inquiries_initial_message_nonblank_chk'),
+      ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_message_body_nonblank_chk'),
+      ('marketplace_inquiry_messages', 'marketplace_inquiry_messages_metadata_object_chk')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -344,7 +361,7 @@ begin
 end
 $$;
 
--- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 + 012 + 013 performance paths.
+-- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 + 012 + 013 + 014 performance paths.
 do $$
 declare
   missing_count integer;
@@ -478,7 +495,19 @@ begin
       ('marketplace_share_events_share_link_id_idx'),
       ('marketplace_share_events_viewer_profile_id_idx'),
       ('marketplace_share_events_event_type_idx'),
-      ('marketplace_share_events_created_at_idx')
+      ('marketplace_share_events_created_at_idx'),
+      ('marketplace_inquiries_buyer_profile_id_idx'),
+      ('marketplace_inquiries_seller_profile_id_idx'),
+      ('marketplace_inquiries_artwork_id_idx'),
+      ('marketplace_inquiries_listing_id_idx'),
+      ('marketplace_inquiries_status_idx'),
+      ('marketplace_inquiries_is_active_idx'),
+      ('marketplace_inquiries_last_message_at_idx'),
+      ('marketplace_inquiries_created_at_idx'),
+      ('marketplace_inquiry_messages_inquiry_id_idx'),
+      ('marketplace_inquiry_messages_sender_profile_id_idx'),
+      ('marketplace_inquiry_messages_sender_role_idx'),
+      ('marketplace_inquiry_messages_created_at_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
