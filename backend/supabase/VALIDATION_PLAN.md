@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0015)
+# Backend DB Validation Plan (Migrations 0001-0016)
 
-This plan validates Migration 001 through Migration 014, implemented in files 0001 through 0015, against a **real PostgreSQL/Supabase-compatible database** before any Migration 015+ work.
+This plan validates Migration 001 through Migration 015, implemented in files 0001 through 0016, against a **real PostgreSQL/Supabase-compatible database** before any Migration 016+ work.
 
 ## Scope
 
@@ -19,6 +19,7 @@ This plan validates Migration 001 through Migration 014, implemented in files 00
 - `0013_migration_012_marketplace_collections_wishlist.sql`
 - `0014_migration_013_marketplace_social_sharing.sql`
 - `0015_migration_014_marketplace_inquiries_contact.sql`
+- `0016_migration_015_marketplace_offers_negotiations.sql`
 
 ## Goals
 
@@ -34,15 +35,14 @@ This plan validates Migration 001 through Migration 014, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 014 coverage
+## Migration 015 coverage
 
-Migration 014 validates the backend foundation for marketplace inquiries and contact requests:
+Migration 015 validates the backend foundation for marketplace offers and negotiations:
 
-- `public.marketplace_inquiry_status`
-- `public.marketplace_inquiry_sender_role`
-- `public.marketplace_contact_request_type`
-- `public.marketplace_inquiries`
-- `public.marketplace_inquiry_messages`
+- `public.marketplace_offer_status`
+- `public.marketplace_offer_event_type`
+- `public.marketplace_offers`
+- `public.marketplace_offer_events`
 
 Guardrails preserved:
 
@@ -53,6 +53,9 @@ Guardrails preserved:
 - no coupling to homepage/admin content logic
 - backend foundation only, no frontend implementation
 - no AI, bots, or agents
+- no payment capture
+- no escrow release logic
+- no crypto
 
 ## Validation workflow
 
