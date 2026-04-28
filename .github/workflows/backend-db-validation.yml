@@ -47,5 +47,5 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Validate migrations 0001-0016
+    - name: Validate migrations 0001-0017
         run: bash scripts/db_validate_migrations.sh
