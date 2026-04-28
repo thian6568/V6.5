@@ -1,4 +1,4 @@
--- Assertions for migrations 0001-0017.
+-- Tables expected after 0001-0018.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
 -- Tables expected after 0001-0017.
