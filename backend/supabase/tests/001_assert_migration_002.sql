@@ -628,3 +628,77 @@ begin
   end if;
 end
 $$;
+
+-- Migration 018 checkout order draft conversion checks.
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_drafts'),
+      ('public', 'marketplace_order_draft_items'),
+      ('public', 'marketplace_order_conversion_events')
+  ) as expected(schema_name, table_name)
+  left join information_schema.tables t
+    on t.table_schema = expected.schema_name
+   and t.table_name = expected.table_name
+  where t.table_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 018 expected tables: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_draft_status'),
+      ('public', 'marketplace_order_conversion_event_type'),
+      ('public', 'marketplace_order_draft_item_source_type')
+  ) as expected(schema_name, type_name)
+  left join pg_type t on t.typname = expected.type_name
+  left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
+  where n.oid is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 018 expected enums: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_drafts', 'marketplace_order_drafts_checkout_intent_id_fkey'),
+      ('marketplace_order_drafts', 'marketplace_order_drafts_invoice_draft_id_fkey'),
+      ('marketplace_order_drafts', 'marketplace_order_drafts_buyer_profile_id_fkey'),
+      ('marketplace_order_drafts', 'marketplace_order_drafts_target_order_id_fkey'),
+      ('marketplace_order_draft_items', 'marketplace_order_draft_items_order_draft_id_fkey'),
+      ('marketplace_order_draft_items', 'marketplace_order_draft_items_invoice_draft_item_id_fkey'),
+      ('marketplace_order_draft_items', 'marketplace_order_draft_items_checkout_intent_item_id_fkey'),
+      ('marketplace_order_conversion_events', 'marketplace_order_conversion_events_order_draft_id_fkey'),
+      ('marketplace_order_conversion_events', 'marketplace_order_conversion_events_actor_profile_id_fkey')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'FOREIGN KEY'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 018 expected foreign keys: %', missing_count;
+  end if;
+end
+$$;

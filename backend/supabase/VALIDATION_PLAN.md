@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0017)
+# Backend DB Validation Plan (Migrations 0001-0018)
 
-This plan validates Migration 001 through Migration 016, implemented in files 0001 through 0017, against a **real PostgreSQL/Supabase-compatible database** before any Migration 017+ work.
+This plan validates Migration 001 through Migration 018, implemented in files 0001 through 0019, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -21,6 +21,8 @@ This plan validates Migration 001 through Migration 016, implemented in files 00
 - `0015_migration_014_marketplace_inquiries_contact.sql`
 - `0016_migration_015_marketplace_offers_negotiations.sql`
 - `0017_migration_016_marketplace_cart_checkout_intents.sql`
+- `0018_migration_017_marketplace_invoice_drafts.sql`
+- `0019_migration_018_checkout_order_draft_conversion.sql`
 
 ## Goals
 
@@ -36,16 +38,22 @@ This plan validates Migration 001 through Migration 016, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 016 coverage
+## Migration 018 coverage
 
-Migration 016 validates the backend foundation for marketplace cart and checkout intent preparation:
+Migration 018 validates the backend foundation for checkout-to-order draft preparation and conversion tracking.
 
-- `public.marketplace_checkout_intent_status`
-- `public.marketplace_checkout_item_source_type`
-- `public.marketplace_carts`
-- `public.marketplace_cart_items`
-- `public.marketplace_checkout_intents`
-- `public.marketplace_checkout_intent_items`
+It adds and validates:
+
+- `public.marketplace_order_draft_status`
+- `public.marketplace_order_conversion_event_type`
+- `public.marketplace_order_draft_item_source_type`
+- `public.marketplace_order_drafts`
+- `public.marketplace_order_draft_items`
+- `public.marketplace_order_conversion_events`
+
+## Migration 018 guardrails
+
+Migration 018 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
@@ -57,10 +65,14 @@ Guardrails preserved:
 - backend foundation only, no frontend implementation
 - no AI, bots, or agents
 - no payment capture
+- no payment gateway integration
 - no escrow release logic
 - no crypto
-- no shipping execution
-- no tax calculation execution
+- no live shipping execution
+- no real tax calculation execution
+- no replacement of existing `public.orders`
+- no replacement of existing `public.order_items`
+- `public.orders` remains the final canonical order table
 
 ## Validation workflow
 

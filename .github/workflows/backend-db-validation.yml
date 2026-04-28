@@ -6,12 +6,14 @@ on:
     paths:
       - "backend/supabase/migrations/**"
       - "backend/supabase/tests/**"
+      - "backend/supabase/VALIDATION_PLAN.md"
       - "scripts/db_validate_migrations.sh"
       - ".github/workflows/backend-db-validation.yml"
   pull_request:
     paths:
       - "backend/supabase/migrations/**"
       - "backend/supabase/tests/**"
+      - "backend/supabase/VALIDATION_PLAN.md"
       - "scripts/db_validate_migrations.sh"
       - ".github/workflows/backend-db-validation.yml"
 
