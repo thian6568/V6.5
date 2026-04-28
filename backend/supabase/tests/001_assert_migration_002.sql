@@ -1,7 +1,7 @@
--- Assertions for migrations 0001-0016.
+-- Assertions for migrations 0001-0017.
 -- This script must fail fast by raising exceptions when expected schema objects are missing.
 
--- Tables expected after 0001-0016.
+-- Tables expected after 0001-0017.
 do $$
 declare
   missing_count integer;
@@ -52,7 +52,11 @@ begin
       ('public', 'marketplace_inquiries'),
       ('public', 'marketplace_inquiry_messages'),
       ('public', 'marketplace_offers'),
-      ('public', 'marketplace_offer_events')
+      ('public', 'marketplace_offer_events'),
+      ('public', 'marketplace_carts'),
+      ('public', 'marketplace_cart_items'),
+      ('public', 'marketplace_checkout_intents'),
+      ('public', 'marketplace_checkout_intent_items')
   ) as expected(schema_name, table_name)
   left join information_schema.tables t
     on t.table_schema = expected.schema_name
@@ -113,7 +117,9 @@ begin
       ('public', 'marketplace_inquiry_sender_role'),
       ('public', 'marketplace_contact_request_type'),
       ('public', 'marketplace_offer_status'),
-      ('public', 'marketplace_offer_event_type')
+      ('public', 'marketplace_offer_event_type'),
+      ('public', 'marketplace_checkout_intent_status'),
+      ('public', 'marketplace_checkout_item_source_type')
   ) as expected(schema_name, type_name)
   left join pg_type t on t.typname = expected.type_name
   left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
@@ -214,7 +220,19 @@ begin
       ('marketplace_offers', 'marketplace_offers_listing_id_fkey'),
       ('marketplace_offers', 'marketplace_offers_inquiry_id_fkey'),
       ('marketplace_offer_events', 'marketplace_offer_events_offer_id_fkey'),
-      ('marketplace_offer_events', 'marketplace_offer_events_actor_profile_id_fkey')
+      ('marketplace_offer_events', 'marketplace_offer_events_actor_profile_id_fkey'),
+      ('marketplace_carts', 'marketplace_carts_buyer_profile_id_fkey'),
+      ('marketplace_cart_items', 'marketplace_cart_items_cart_id_fkey'),
+      ('marketplace_cart_items', 'marketplace_cart_items_artwork_id_fkey'),
+      ('marketplace_cart_items', 'marketplace_cart_items_listing_id_fkey'),
+      ('marketplace_cart_items', 'marketplace_cart_items_added_from_offer_id_fkey'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_buyer_profile_id_fkey'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_cart_id_fkey'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_checkout_intent_id_fkey'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_cart_item_id_fkey'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_artwork_id_fkey'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_listing_id_fkey'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_offer_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -229,7 +247,7 @@ begin
 end
 $$;
 
--- Check constraint checks including Migration 008, 009, 010, 011, 012, 013, 014, and 015.
+-- Check constraint checks including Migration 008, 009, 010, 011, 012, 013, 014, 015, and 016.
 do $$
 declare
   missing_count integer;
@@ -308,7 +326,27 @@ begin
       ('marketplace_offer_events', 'marketplace_offer_events_event_amount_positive_chk'),
       ('marketplace_offer_events', 'marketplace_offer_events_event_currency_code_chk'),
       ('marketplace_offer_events', 'marketplace_offer_events_note_nonblank_chk'),
-      ('marketplace_offer_events', 'marketplace_offer_events_metadata_object_chk')
+      ('marketplace_offer_events', 'marketplace_offer_events_metadata_object_chk'),
+      ('marketplace_carts', 'marketplace_carts_name_nonblank_chk'),
+      ('marketplace_cart_items', 'marketplace_cart_items_exactly_one_target_chk'),
+      ('marketplace_cart_items', 'marketplace_cart_items_quantity_positive_chk'),
+      ('marketplace_cart_items', 'marketplace_cart_items_note_nonblank_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_currency_code_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_subtotal_nonnegative_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_discount_nonnegative_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_total_nonnegative_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_discount_not_above_subtotal_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_total_amount_consistency_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_submitted_status_timestamp_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_cancelled_status_timestamp_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_terminal_timestamps_exclusive_chk'),
+      ('marketplace_checkout_intents', 'marketplace_checkout_intents_metadata_object_chk'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_unit_amount_nonnegative_chk'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_quantity_positive_chk'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_line_subtotal_nonnegative_chk'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_line_subtotal_consistency_chk'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_metadata_object_chk'),
+      ('marketplace_checkout_intent_items', 'marketplace_checkout_intent_items_source_link_chk')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
     on tc.table_schema = 'public'
@@ -364,7 +402,8 @@ begin
       ('public', 'wishlists_one_default_per_profile_idx'),
       ('public', 'wishlist_items_wishlist_artwork_unique_idx'),
       ('public', 'wishlist_items_wishlist_listing_unique_idx'),
-      ('public', 'marketplace_share_links_share_token_key')
+      ('public', 'marketplace_share_links_share_token_key'),
+      ('public', 'marketplace_carts_one_default_per_buyer_idx')
   ) as expected(schema_name, object_name)
   left join (
     select connamespace as namespace_oid, conname as object_name
@@ -384,7 +423,7 @@ begin
 end
 $$;
 
--- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 + 012 + 013 + 014 + 015 performance paths.
+-- Index checks for Migration 002 + 003 + 004 + 008 + 009 + 010 + 011 + 012 + 013 + 014 + 015 + 016 performance paths.
 do $$
 declare
   missing_count integer;
@@ -543,7 +582,25 @@ begin
       ('marketplace_offer_events_offer_id_idx'),
       ('marketplace_offer_events_actor_profile_id_idx'),
       ('marketplace_offer_events_event_type_idx'),
-      ('marketplace_offer_events_created_at_idx')
+      ('marketplace_offer_events_created_at_idx'),
+      ('marketplace_carts_buyer_profile_id_idx'),
+      ('marketplace_carts_buyer_profile_id_is_active_idx'),
+      ('marketplace_carts_one_default_per_buyer_idx'),
+      ('marketplace_cart_items_cart_id_idx'),
+      ('marketplace_cart_items_artwork_id_idx'),
+      ('marketplace_cart_items_listing_id_idx'),
+      ('marketplace_cart_items_added_from_offer_id_idx'),
+      ('marketplace_checkout_intents_buyer_profile_id_idx'),
+      ('marketplace_checkout_intents_cart_id_idx'),
+      ('marketplace_checkout_intents_status_idx'),
+      ('marketplace_checkout_intents_expires_at_idx'),
+      ('marketplace_checkout_intents_created_at_idx'),
+      ('marketplace_checkout_intent_items_checkout_intent_id_idx'),
+      ('marketplace_checkout_intent_items_cart_item_id_idx'),
+      ('marketplace_checkout_intent_items_artwork_id_idx'),
+      ('marketplace_checkout_intent_items_listing_id_idx'),
+      ('marketplace_checkout_intent_items_offer_id_idx'),
+      ('marketplace_checkout_intent_items_source_type_idx')
   ) as expected(index_name)
   left join pg_indexes i
     on i.schemaname = 'public'
