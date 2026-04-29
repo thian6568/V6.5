@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0019)
+# Backend DB Validation Plan (Migrations 0001-0020)
 
-This plan validates Migration 001 through Migration 019, implemented in files 0001 through 0020, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 020, implemented in files 0001 through 0021, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -24,6 +24,7 @@ This plan validates Migration 001 through Migration 019, implemented in files 00
 - `0018_migration_017_checkout_contact_delivery_invoice_draft.sql`
 - `0019_migration_018_checkout_order_draft_conversion.sql`
 - `0020_migration_019_order_finalization_foundation.sql`
+- `0021_migration_020_order_status_lifecycle_foundation.sql`
 
 ## Goals
 
@@ -39,20 +40,20 @@ This plan validates Migration 001 through Migration 019, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 019 coverage
+## Migration 020 coverage
 
-Migration 019 validates the backend foundation for order finalization after checkout-to-order draft conversion.
+Migration 020 validates the backend foundation for order status lifecycle rules and event tracking after order finalization.
 
 It adds and validates:
 
-- `public.marketplace_order_finalization_status`
-- `public.marketplace_order_finalization_event_type`
-- `public.marketplace_order_finalizations`
-- `public.marketplace_order_finalization_events`
+- `public.marketplace_order_status_lifecycle_event_type`
+- `public.marketplace_order_status_change_source`
+- `public.marketplace_order_status_lifecycle_rules`
+- `public.marketplace_order_status_lifecycle_events`
 
-## Migration 019 guardrails
+## Migration 020 guardrails
 
-Migration 019 must remain backend-only and must not introduce unrelated platform logic.
+Migration 020 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
