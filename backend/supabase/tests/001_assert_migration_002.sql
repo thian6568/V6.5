@@ -785,4 +785,131 @@ begin
   end if;
 end
 $$;
+-- Migration 020 order status lifecycle foundation checks.
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_status_lifecycle_rules'),
+      ('public', 'marketplace_order_status_lifecycle_events')
+  ) as expected(schema_name, table_name)
+  left join information_schema.tables t
+    on t.table_schema = expected.schema_name
+   and t.table_name = expected.table_name
+  where t.table_name is null;
 
+  if missing_count > 0 then
+    raise exception 'Missing Migration 020 expected tables: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_status_lifecycle_event_type'),
+      ('public', 'marketplace_order_status_change_source')
+  ) as expected(schema_name, type_name)
+  left join pg_type t on t.typname = expected.type_name
+  left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
+  where n.oid is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 020 expected enums: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_status_lifecycle_events', 'order_status_events_order_id_fk'),
+      ('marketplace_order_status_lifecycle_events', 'order_status_events_transition_rule_id_fk'),
+      ('marketplace_order_status_lifecycle_events', 'order_status_events_actor_profile_id_fk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'FOREIGN KEY'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 020 expected foreign keys: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_status_lifecycle_rules', 'order_status_lifecycle_rules_from_to_different_chk'),
+      ('marketplace_order_status_lifecycle_rules', 'order_status_lifecycle_rules_label_nonblank_chk'),
+      ('marketplace_order_status_lifecycle_rules', 'order_status_lifecycle_rules_note_nonblank_chk'),
+      ('marketplace_order_status_lifecycle_rules', 'order_status_lifecycle_rules_metadata_object_chk'),
+      ('marketplace_order_status_lifecycle_events', 'order_status_lifecycle_events_to_status_required_chk'),
+      ('marketplace_order_status_lifecycle_events', 'order_status_lifecycle_events_from_to_different_chk'),
+      ('marketplace_order_status_lifecycle_events', 'order_status_lifecycle_events_note_nonblank_chk'),
+      ('marketplace_order_status_lifecycle_events', 'order_status_lifecycle_events_metadata_object_chk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'CHECK'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 020 expected check constraints: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('order_status_lifecycle_rules_unique_active_transition_idx'),
+      ('order_status_lifecycle_rules_unique_active_initial_idx'),
+      ('order_status_lifecycle_rules_from_status_idx'),
+      ('order_status_lifecycle_rules_to_status_idx'),
+      ('order_status_lifecycle_rules_change_source_idx'),
+      ('order_status_lifecycle_rules_is_active_idx'),
+      ('order_status_lifecycle_events_order_id_idx'),
+      ('order_status_lifecycle_events_transition_rule_id_idx'),
+      ('order_status_lifecycle_events_actor_profile_id_idx'),
+      ('order_status_lifecycle_events_event_type_idx'),
+      ('order_status_lifecycle_events_change_source_idx'),
+      ('order_status_lifecycle_events_from_status_idx'),
+      ('order_status_lifecycle_events_to_status_idx'),
+      ('order_status_lifecycle_events_status_changed_at_idx'),
+      ('order_status_lifecycle_events_created_at_idx')
+  ) as expected(index_name)
+  left join pg_indexes i
+    on i.schemaname = 'public'
+   and i.indexname = expected.index_name
+  where i.indexname is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 020 expected indexes: %', missing_count;
+  end if;
+end
+$$;
