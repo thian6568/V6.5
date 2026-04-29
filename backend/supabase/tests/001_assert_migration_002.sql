@@ -702,3 +702,87 @@ begin
   end if;
 end
 $$;
+
+-- Migration 019 order finalization foundation checks.
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_finalizations'),
+      ('public', 'marketplace_order_finalization_events')
+  ) as expected(schema_name, table_name)
+  left join information_schema.tables t
+    on t.table_schema = expected.schema_name
+   and t.table_name = expected.table_name
+  where t.table_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 019 expected tables: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_finalization_status'),
+      ('public', 'marketplace_order_finalization_event_type')
+  ) as expected(schema_name, type_name)
+  left join pg_type t on t.typname = expected.type_name
+  left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
+  where n.oid is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 019 expected enums: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_finalizations', 'order_draft_id', 'marketplace_order_drafts'),
+      ('marketplace_order_finalizations', 'order_id', 'orders'),
+      ('marketplace_order_finalizations', 'buyer_profile_id', 'profiles'),
+      ('marketplace_order_finalization_events', 'order_finalization_id', 'marketplace_order_finalizations'),
+      ('marketplace_order_finalization_events', 'actor_profile_id', 'profiles')
+  ) as expected(table_name, column_name, referenced_table_name)
+  where not exists (
+    select 1
+    from pg_constraint con
+    join pg_class tbl on tbl.oid = con.conrelid
+    join pg_namespace ns on ns.oid = tbl.relnamespace
+    join pg_class ref_tbl on ref_tbl.oid = con.confrelid
+    join pg_namespace ref_ns on ref_ns.oid = ref_tbl.relnamespace
+    join lateral (
+      select array_agg(att.attname order by keys.ordinality) as column_names
+      from unnest(con.conkey) with ordinality as keys(attnum, ordinality)
+      join pg_attribute att
+        on att.attrelid = con.conrelid
+       and att.attnum = keys.attnum
+    ) fk_columns on true
+    where con.contype = 'f'
+      and ns.nspname = 'public'
+      and tbl.relname = expected.table_name
+      and ref_ns.nspname = 'public'
+      and ref_tbl.relname = expected.referenced_table_name
+      and fk_columns.column_names = array[expected.column_name::name]
+  );
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 019 expected foreign key relationships: %', missing_count;
+  end if;
+end
+$$;
+
