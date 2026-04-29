@@ -887,7 +887,8 @@ begin
   select count(*) into missing_count
   from (
     values
-      ('order_status_lifecycle_rules_unique_active_idx'),
+      ('order_status_lifecycle_rules_unique_active_transition_idx'),
+      ('order_status_lifecycle_rules_unique_active_initial_idx'),
       ('order_status_lifecycle_rules_from_status_idx'),
       ('order_status_lifecycle_rules_to_status_idx'),
       ('order_status_lifecycle_rules_change_source_idx'),
