@@ -777,7 +777,7 @@ begin
       and tbl.relname = expected.table_name
       and ref_ns.nspname = 'public'
       and ref_tbl.relname = expected.referenced_table_name
-      and fk_columns.column_names = array[expected.column_name]
+      and fk_columns.column_names = array[expected.column_name::name]
   );
 
   if missing_count > 0 then
