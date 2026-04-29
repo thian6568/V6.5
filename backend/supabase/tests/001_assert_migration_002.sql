@@ -754,7 +754,7 @@ begin
       ('marketplace_order_finalizations', 'marketplace_order_finalizations_order_draft_id_fkey'),
       ('marketplace_order_finalizations', 'marketplace_order_finalizations_order_id_fkey'),
       ('marketplace_order_finalizations', 'marketplace_order_finalizations_buyer_profile_id_fkey'),
-      ('marketplace_order_finalization_events', 'marketplace_order_finalization_events_order_finalization_id_fkey'),
+      ('marketplace_order_finalization_events', 'marketplace_order_finalization_events_order_finalization_id_fke'),
       ('marketplace_order_finalization_events', 'marketplace_order_finalization_events_actor_profile_id_fkey')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
