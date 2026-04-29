@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0018)
+# Backend DB Validation Plan (Migrations 0001-0019)
 
-This plan validates Migration 001 through Migration 018, implemented in files 0001 through 0019, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 019, implemented in files 0001 through 0020, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -21,8 +21,9 @@ This plan validates Migration 001 through Migration 018, implemented in files 00
 - `0015_migration_014_marketplace_inquiries_contact.sql`
 - `0016_migration_015_marketplace_offers_negotiations.sql`
 - `0017_migration_016_marketplace_cart_checkout_intents.sql`
-- `0018_migration_017_marketplace_invoice_drafts.sql`
+- `0018_migration_017_checkout_contact_delivery_invoice_draft.sql`
 - `0019_migration_018_checkout_order_draft_conversion.sql`
+- `0020_migration_019_order_finalization_foundation.sql`
 
 ## Goals
 
@@ -38,22 +39,20 @@ This plan validates Migration 001 through Migration 018, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 018 coverage
+## Migration 019 coverage
 
-Migration 018 validates the backend foundation for checkout-to-order draft preparation and conversion tracking.
+Migration 019 validates the backend foundation for order finalization after checkout-to-order draft conversion.
 
 It adds and validates:
 
-- `public.marketplace_order_draft_status`
-- `public.marketplace_order_conversion_event_type`
-- `public.marketplace_order_draft_item_source_type`
-- `public.marketplace_order_drafts`
-- `public.marketplace_order_draft_items`
-- `public.marketplace_order_conversion_events`
+- `public.marketplace_order_finalization_status`
+- `public.marketplace_order_finalization_event_type`
+- `public.marketplace_order_finalizations`
+- `public.marketplace_order_finalization_events`
 
-## Migration 018 guardrails
+## Migration 019 guardrails
 
-Migration 018 must remain backend-only and must not introduce unrelated platform logic.
+Migration 019 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
