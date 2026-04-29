@@ -80,13 +80,22 @@ create table public.marketplace_order_status_lifecycle_rules (
   )
 );
 
-create unique index order_status_lifecycle_rules_unique_active_idx
+create unique index order_status_lifecycle_rules_unique_active_transition_idx
   on public.marketplace_order_status_lifecycle_rules (
-    coalesce(from_status::text, '__initial__'),
+    from_status,
     to_status,
     change_source
   )
-  where is_active = true;
+  where is_active = true
+    and from_status is not null;
+
+create unique index order_status_lifecycle_rules_unique_active_initial_idx
+  on public.marketplace_order_status_lifecycle_rules (
+    to_status,
+    change_source
+  )
+  where is_active = true
+    and from_status is null;
 
 create index order_status_lifecycle_rules_from_status_idx
   on public.marketplace_order_status_lifecycle_rules(from_status);
