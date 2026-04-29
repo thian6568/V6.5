@@ -702,6 +702,7 @@ begin
   end if;
 end
 $$;
+
 -- Migration 019 order finalization foundation checks.
 do $$
 declare
@@ -751,21 +752,37 @@ begin
   select count(*) into missing_count
   from (
     values
-      ('marketplace_order_finalizations', 'marketplace_order_finalizations_order_draft_id_fkey'),
-      ('marketplace_order_finalizations', 'marketplace_order_finalizations_order_id_fkey'),
-      ('marketplace_order_finalizations', 'marketplace_order_finalizations_buyer_profile_id_fkey'),
-      ('marketplace_order_finalization_events', 'marketplace_order_finalization_events_order_finalization_id_fke'),
-      ('marketplace_order_finalization_events', 'marketplace_order_finalization_events_actor_profile_id_fkey')
-  ) as expected(table_name, constraint_name)
-  left join information_schema.table_constraints tc
-    on tc.table_schema = 'public'
-   and tc.table_name = expected.table_name
-   and tc.constraint_name = expected.constraint_name
-   and tc.constraint_type = 'FOREIGN KEY'
-  where tc.constraint_name is null;
+      ('marketplace_order_finalizations', 'order_draft_id', 'marketplace_order_drafts'),
+      ('marketplace_order_finalizations', 'order_id', 'orders'),
+      ('marketplace_order_finalizations', 'buyer_profile_id', 'profiles'),
+      ('marketplace_order_finalization_events', 'order_finalization_id', 'marketplace_order_finalizations'),
+      ('marketplace_order_finalization_events', 'actor_profile_id', 'profiles')
+  ) as expected(table_name, column_name, referenced_table_name)
+  where not exists (
+    select 1
+    from pg_constraint con
+    join pg_class tbl on tbl.oid = con.conrelid
+    join pg_namespace ns on ns.oid = tbl.relnamespace
+    join pg_class ref_tbl on ref_tbl.oid = con.confrelid
+    join pg_namespace ref_ns on ref_ns.oid = ref_tbl.relnamespace
+    join lateral (
+      select array_agg(att.attname order by keys.ordinality) as column_names
+      from unnest(con.conkey) with ordinality as keys(attnum, ordinality)
+      join pg_attribute att
+        on att.attrelid = con.conrelid
+       and att.attnum = keys.attnum
+    ) fk_columns on true
+    where con.contype = 'f'
+      and ns.nspname = 'public'
+      and tbl.relname = expected.table_name
+      and ref_ns.nspname = 'public'
+      and ref_tbl.relname = expected.referenced_table_name
+      and fk_columns.column_names = array[expected.column_name]
+  );
 
   if missing_count > 0 then
-    raise exception 'Missing Migration 019 expected foreign keys: %', missing_count;
+    raise exception 'Missing Migration 019 expected foreign key relationships: %', missing_count;
   end if;
 end
 $$;
+
