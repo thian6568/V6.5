@@ -2498,8 +2498,6 @@ begin
 end
 $$;
 
-    values
-     
      
 -- Migration 032 order retention disposition evidence foundation checks.
 do $$
