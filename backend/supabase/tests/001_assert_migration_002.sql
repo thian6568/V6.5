@@ -1190,3 +1190,145 @@ begin
   end if;
 end
 $$;
+-- Migration 023 order completion acceptance foundation checks.
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_completion_acceptance_records'),
+      ('public', 'marketplace_order_completion_acceptance_events')
+  ) as expected(schema_name, table_name)
+  left join information_schema.tables t
+    on t.table_schema = expected.schema_name
+   and t.table_name = expected.table_name
+  where t.table_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 023 expected tables: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_completion_acceptance_status'),
+      ('public', 'marketplace_order_completion_acceptance_event_type'),
+      ('public', 'marketplace_order_completion_acceptance_actor_role')
+  ) as expected(schema_name, type_name)
+  left join pg_type t on t.typname = expected.type_name
+  left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
+  where n.oid is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 023 expected enums: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_order_id_fk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_handover_record_id_fk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_accepted_by_profile_id_fk'),
+      ('marketplace_order_completion_acceptance_events', 'completion_acceptance_events_record_id_fk'),
+      ('marketplace_order_completion_acceptance_events', 'completion_acceptance_events_order_id_fk'),
+      ('marketplace_order_completion_acceptance_events', 'completion_acceptance_events_actor_profile_id_fk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'FOREIGN KEY'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 023 expected foreign keys: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_reference_nonblank_chk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_rejection_nonblank_chk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_note_nonblank_chk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_rejected_reason_chk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_accepted_status_chk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_rejected_status_chk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_cancelled_status_chk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_terminal_exclusive_chk'),
+      ('marketplace_order_completion_acceptance_records', 'completion_acceptance_records_metadata_object_chk'),
+      ('marketplace_order_completion_acceptance_events', 'completion_acceptance_events_status_change_chk'),
+      ('marketplace_order_completion_acceptance_events', 'completion_acceptance_events_note_nonblank_chk'),
+      ('marketplace_order_completion_acceptance_events', 'completion_acceptance_events_manual_note_required_chk'),
+      ('marketplace_order_completion_acceptance_events', 'completion_acceptance_events_metadata_object_chk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'CHECK'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 023 expected check constraints: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('completion_acceptance_records_reference_key'),
+      ('completion_acceptance_records_one_active_per_order_idx'),
+      ('completion_acceptance_records_order_id_idx'),
+      ('completion_acceptance_records_handover_record_id_idx'),
+      ('completion_acceptance_records_accepted_by_profile_id_idx'),
+      ('completion_acceptance_records_status_idx'),
+      ('completion_acceptance_records_buyer_required_idx'),
+      ('completion_acceptance_records_seller_required_idx'),
+      ('completion_acceptance_records_accepted_at_idx'),
+      ('completion_acceptance_records_rejected_at_idx'),
+      ('completion_acceptance_records_cancelled_at_idx'),
+      ('completion_acceptance_records_created_at_idx'),
+      ('completion_acceptance_events_record_id_idx'),
+      ('completion_acceptance_events_order_id_idx'),
+      ('completion_acceptance_events_actor_profile_id_idx'),
+      ('completion_acceptance_events_actor_role_idx'),
+      ('completion_acceptance_events_event_type_idx'),
+      ('completion_acceptance_events_previous_status_idx'),
+      ('completion_acceptance_events_new_status_idx'),
+      ('completion_acceptance_events_created_at_idx')
+  ) as expected(index_name)
+  left join pg_indexes i
+    on i.schemaname = 'public'
+   and i.indexname = expected.index_name
+  where i.indexname is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 023 expected indexes: %', missing_count;
+  end if;
+end
+$$;

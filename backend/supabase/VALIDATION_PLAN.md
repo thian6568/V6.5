@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0022)
+# Backend DB Validation Plan (Migrations 0001-0023)
 
-This plan validates Migration 001 through Migration 022, implemented in files 0001 through 0023, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 023, implemented in files 0001 through 0024, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -27,6 +27,7 @@ This plan validates Migration 001 through Migration 022, implemented in files 00
 - `0021_migration_020_order_status_lifecycle_foundation.sql`
 - `0022_migration_021_order_fulfillment_readiness_foundation.sql`
 - `0023_migration_022_order_handover_foundation.sql`
+- `0024_migration_023_order_completion_acceptance_foundation.sql`
 
 ## Goals
 
@@ -42,21 +43,21 @@ This plan validates Migration 001 through Migration 022, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 022 coverage
+## Migration 023 coverage
 
-Migration 022 validates the backend foundation for order handover records and handover event tracking after fulfillment readiness.
+Migration 023 validates the backend foundation for order completion acceptance records and completion acceptance event tracking after order handover.
 
 It adds and validates:
 
-- `public.marketplace_order_handover_status`
-- `public.marketplace_order_handover_event_type`
-- `public.marketplace_order_handover_actor_role`
-- `public.marketplace_order_handover_records`
-- `public.marketplace_order_handover_events`
+- `public.marketplace_order_completion_acceptance_status`
+- `public.marketplace_order_completion_acceptance_event_type`
+- `public.marketplace_order_completion_acceptance_actor_role`
+- `public.marketplace_order_completion_acceptance_records`
+- `public.marketplace_order_completion_acceptance_events`
 
-## Migration 022 guardrails
+## Migration 023 guardrails
 
-Migration 022 must remain backend-only and must not introduce unrelated platform logic.
+Migration 023 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
@@ -89,7 +90,7 @@ Expected validation behavior:
 
 1. Create or reset the local validation database.
 2. Bootstrap the local auth-compatible schema.
-3. Apply migrations `0001` through `0023` in order.
+3. Apply migrations `0001` through `0024` in order.
 4. Run assertion checks from `backend/supabase/tests/001_assert_migration_002.sql`.
 5. Fail fast if any expected table, enum, foreign key, check constraint, unique constraint, or index is missing.
 
@@ -134,10 +135,10 @@ If these are not installed locally, full validation should be completed by GitHu
 Before merge, confirm:
 
 - exactly 5 files are changed
-- migration file exists for Migration 022
-- DB assertion file includes Migration 022 checks
-- workflow validates migrations `0001-0023`
-- validation plan documents Migration 022
+- migration file exists for Migration 023
+- DB assertion file includes Migration 023 checks
+- workflow validates migrations `0001-0024`
+- validation plan documents Migration 023
 - GitHub Actions passes
 - no frontend/UI files are changed
 - no payment gateway files are changed
@@ -150,7 +151,7 @@ Before merge, confirm:
 This PR should contain exactly these 5 changed files:
 
 ```text
-backend/supabase/migrations/0023_migration_022_order_handover_foundation.sql
+backend/supabase/migrations/0024_migration_023_order_completion_acceptance_foundation.sql
 backend/supabase/tests/001_assert_migration_002.sql
 scripts/db_validate_migrations.sh
 .github/workflows/backend-db-validation.yml
