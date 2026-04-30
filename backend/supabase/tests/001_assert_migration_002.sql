@@ -2572,21 +2572,21 @@ begin
   select count(*) into missing_count
   from (
     values
-      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_reference_nonblank_chk'),
+      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_reference_nonblank'),
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_uri_nonblank_chk'),
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_hash_nonblank_chk'),
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_note_nonblank_chk'),
-      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_blocker_nonblank_chk'),
+      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_blocker_nonblank_c'),
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_blocked_reason_chk'),
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_ready_status_chk'),
-      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_recorded_status_chk'),
+      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_recorded_status_ch'),
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_blocked_status_chk'),
-      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_cancelled_status_chk'),
-      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_terminal_exclusive_chk'),
-      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_metadata_object_chk'),
+      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_cancelled_status_c'),
+      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_terminal_exclusive'),
+      ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_metadata_object_ch'),
       ('marketplace_order_retention_disposition_evidence_events', 'order_retention_disposition_evidence_events_status_change_chk'),
       ('marketplace_order_retention_disposition_evidence_events', 'order_retention_disposition_evidence_events_note_nonblank_chk'),
-      ('marketplace_order_retention_disposition_evidence_events', 'order_retention_disposition_evidence_events_manual_note_required_chk'),
+      ('marketplace_order_retention_disposition_evidence_events', 'order_retention_disposition_evidence_events_manual_note_require'),
       ('marketplace_order_retention_disposition_evidence_events', 'order_retention_disposition_evidence_events_metadata_object_chk')
   ) as expected(table_name, constraint_name)
   left join information_schema.table_constraints tc
