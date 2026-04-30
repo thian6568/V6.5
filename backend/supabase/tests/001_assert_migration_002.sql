@@ -1332,3 +1332,147 @@ begin
   end if;
 end
 $$;
+-- Migration 024 order completion evidence foundation checks.
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_completion_evidence_records'),
+      ('public', 'marketplace_order_completion_evidence_events')
+  ) as expected(schema_name, table_name)
+  left join information_schema.tables t
+    on t.table_schema = expected.schema_name
+   and t.table_name = expected.table_name
+  where t.table_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 024 expected tables: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_completion_evidence_status'),
+      ('public', 'marketplace_order_completion_evidence_type'),
+      ('public', 'marketplace_order_completion_evidence_event_type'),
+      ('public', 'marketplace_order_completion_evidence_actor_role')
+  ) as expected(schema_name, type_name)
+  left join pg_type t on t.typname = expected.type_name
+  left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
+  where n.oid is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 024 expected enums: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_order_id_fk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_acceptance_id_fk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_handover_id_fk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_created_by_id_fk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_reviewed_by_id_fk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_superseded_by_id_fk'),
+      ('marketplace_order_completion_evidence_events', 'completion_evidence_events_record_id_fk'),
+      ('marketplace_order_completion_evidence_events', 'completion_evidence_events_order_id_fk'),
+      ('marketplace_order_completion_evidence_events', 'completion_evidence_events_actor_profile_id_fk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'FOREIGN KEY'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 024 expected foreign keys: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_reference_nonblank_chk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_summary_nonblank_chk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_rejection_nonblank_chk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_rejected_reason_chk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_reviewed_status_chk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_superseded_chk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_not_self_superseded_chk'),
+      ('marketplace_order_completion_evidence_records', 'completion_evidence_records_metadata_object_chk'),
+      ('marketplace_order_completion_evidence_events', 'completion_evidence_events_status_change_chk'),
+      ('marketplace_order_completion_evidence_events', 'completion_evidence_events_note_nonblank_chk'),
+      ('marketplace_order_completion_evidence_events', 'completion_evidence_events_manual_note_required_chk'),
+      ('marketplace_order_completion_evidence_events', 'completion_evidence_events_metadata_object_chk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'CHECK'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 024 expected check constraints: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('completion_evidence_records_reference_key'),
+      ('completion_evidence_records_order_id_idx'),
+      ('completion_evidence_records_acceptance_id_idx'),
+      ('completion_evidence_records_handover_id_idx'),
+      ('completion_evidence_records_created_by_id_idx'),
+      ('completion_evidence_records_reviewed_by_id_idx'),
+      ('completion_evidence_records_superseded_by_id_idx'),
+      ('completion_evidence_records_status_idx'),
+      ('completion_evidence_records_type_idx'),
+      ('completion_evidence_records_reviewed_at_idx'),
+      ('completion_evidence_records_created_at_idx'),
+      ('completion_evidence_events_record_id_idx'),
+      ('completion_evidence_events_order_id_idx'),
+      ('completion_evidence_events_actor_profile_id_idx'),
+      ('completion_evidence_events_actor_role_idx'),
+      ('completion_evidence_events_event_type_idx'),
+      ('completion_evidence_events_previous_status_idx'),
+      ('completion_evidence_events_new_status_idx'),
+      ('completion_evidence_events_created_at_idx')
+  ) as expected(index_name)
+  left join pg_indexes i
+    on i.schemaname = 'public'
+   and i.indexname = expected.index_name
+  where i.indexname is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 024 expected indexes: %', missing_count;
+  end if;
+end
+$$;
