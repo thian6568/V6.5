@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0028)
+# Backend DB Validation Plan (Migrations 0001-0029)
 
-This plan validates Migration 001 through Migration 028, implemented in files 0001 through 0029, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 029, implemented in files 0001 through 0030, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -33,6 +33,7 @@ This plan validates Migration 001 through Migration 028, implemented in files 00
 - `0027_migration_026_order_post_closure_audit_foundation.sql`
 - `0028_migration_027_order_archive_foundation.sql`
 - `0029_migration_028_order_retention_foundation.sql`
+- `0030_migration_029_order_retention_review_foundation.sql`
 
 ## Goals
 
@@ -48,22 +49,22 @@ This plan validates Migration 001 through Migration 028, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 028 coverage
+## Migration 029 coverage
 
-Migration 028 validates the backend foundation for order retention records and order retention event tracking after order archive.
+Migration 029 validates the backend foundation for order retention review records and order retention review event tracking after order retention.
 
 It adds and validates:
 
-- `public.marketplace_order_retention_status`
-- `public.marketplace_order_retention_reason`
-- `public.marketplace_order_retention_event_type`
-- `public.marketplace_order_retention_actor_role`
-- `public.marketplace_order_retention_records`
-- `public.marketplace_order_retention_events`
+- `public.marketplace_order_retention_review_status`
+- `public.marketplace_order_retention_review_type`
+- `public.marketplace_order_retention_review_event_type`
+- `public.marketplace_order_retention_review_actor_role`
+- `public.marketplace_order_retention_review_records`
+- `public.marketplace_order_retention_review_events`
 
-## Migration 028 guardrails
+## Migration 029 guardrails
 
-Migration 028 must remain backend-only and must not introduce unrelated platform logic.
+Migration 029 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
@@ -96,7 +97,7 @@ Expected validation behavior:
 
 1. Create or reset the local validation database.
 2. Bootstrap the local auth-compatible schema.
-3. Apply migrations `0001` through `0029` in order.
+3. Apply migrations `0001` through `0030` in order.
 4. Run assertion checks from `backend/supabase/tests/001_assert_migration_002.sql`.
 5. Fail fast if any expected table, enum, foreign key, check constraint, unique constraint, or index is missing.
 
@@ -141,10 +142,10 @@ If these are not installed locally, full validation should be completed by GitHu
 Before merge, confirm:
 
 - exactly 5 files are changed
-- migration file exists for Migration 028
-- DB assertion file includes Migration 028 checks
-- workflow validates migrations `0001-0029`
-- validation plan documents Migration 028
+- migration file exists for Migration 029
+- DB assertion file includes Migration 029 checks
+- workflow validates migrations `0001-0030`
+- validation plan documents Migration 029
 - GitHub Actions passes
 - no frontend/UI files are changed
 - no payment gateway files are changed
@@ -157,7 +158,7 @@ Before merge, confirm:
 This PR should contain exactly these 5 changed files:
 
 ```text
-backend/supabase/migrations/0029_migration_028_order_retention_foundation.sql
+backend/supabase/migrations/0030_migration_029_order_retention_review_foundation.sql
 backend/supabase/tests/001_assert_migration_002.sql
 scripts/db_validate_migrations.sh
 .github/workflows/backend-db-validation.yml
