@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0025)
+# Backend DB Validation Plan (Migrations 0001-0026)
 
-This plan validates Migration 001 through Migration 025, implemented in files 0001 through 0026, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 026, implemented in files 0001 through 0027, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -30,6 +30,7 @@ This plan validates Migration 001 through Migration 025, implemented in files 00
 - `0024_migration_023_order_completion_acceptance_foundation.sql`
 - `0025_migration_024_order_completion_evidence_foundation.sql`
 - `0026_migration_025_order_closure_foundation.sql`
+- `0027_migration_026_order_post_closure_audit_foundation.sql`
 
 ## Goals
 
@@ -45,22 +46,22 @@ This plan validates Migration 001 through Migration 025, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 025 coverage
+## Migration 026 coverage
 
-Migration 025 validates the backend foundation for order closure records and order closure event tracking after completion evidence.
+Migration 026 validates the backend foundation for post-closure audit records and post-closure audit event tracking after order closure.
 
 It adds and validates:
 
-- `public.marketplace_order_closure_status`
-- `public.marketplace_order_closure_reason`
-- `public.marketplace_order_closure_event_type`
-- `public.marketplace_order_closure_actor_role`
-- `public.marketplace_order_closure_records`
-- `public.marketplace_order_closure_events`
+- `public.marketplace_order_post_closure_audit_status`
+- `public.marketplace_order_post_closure_audit_type`
+- `public.marketplace_order_post_closure_audit_event_type`
+- `public.marketplace_order_post_closure_audit_actor_role`
+- `public.marketplace_order_post_closure_audit_records`
+- `public.marketplace_order_post_closure_audit_events`
 
-## Migration 025 guardrails
+## Migration 026 guardrails
 
-Migration 025 must remain backend-only and must not introduce unrelated platform logic.
+Migration 026 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
@@ -93,7 +94,7 @@ Expected validation behavior:
 
 1. Create or reset the local validation database.
 2. Bootstrap the local auth-compatible schema.
-3. Apply migrations `0001` through `0026` in order.
+3. Apply migrations `0001` through `0027` in order.
 4. Run assertion checks from `backend/supabase/tests/001_assert_migration_002.sql`.
 5. Fail fast if any expected table, enum, foreign key, check constraint, unique constraint, or index is missing.
 
@@ -138,10 +139,10 @@ If these are not installed locally, full validation should be completed by GitHu
 Before merge, confirm:
 
 - exactly 5 files are changed
-- migration file exists for Migration 025
-- DB assertion file includes Migration 025 checks
-- workflow validates migrations `0001-0026`
-- validation plan documents Migration 025
+- migration file exists for Migration 026
+- DB assertion file includes Migration 026 checks
+- workflow validates migrations `0001-0027`
+- validation plan documents Migration 026
 - GitHub Actions passes
 - no frontend/UI files are changed
 - no payment gateway files are changed
@@ -154,7 +155,7 @@ Before merge, confirm:
 This PR should contain exactly these 5 changed files:
 
 ```text
-backend/supabase/migrations/0026_migration_025_order_closure_foundation.sql
+backend/supabase/migrations/0027_migration_026_order_post_closure_audit_foundation.sql
 backend/supabase/tests/001_assert_migration_002.sql
 scripts/db_validate_migrations.sh
 .github/workflows/backend-db-validation.yml
