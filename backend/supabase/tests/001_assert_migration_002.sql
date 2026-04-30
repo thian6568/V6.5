@@ -913,3 +913,138 @@ begin
   end if;
 end
 $$;
+-- Migration 021 order fulfillment readiness foundation checks.
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_fulfillment_readiness_checks'),
+      ('public', 'marketplace_order_fulfillment_readiness_events')
+  ) as expected(schema_name, table_name)
+  left join information_schema.tables t
+    on t.table_schema = expected.schema_name
+   and t.table_name = expected.table_name
+  where t.table_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 021 expected tables: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_fulfillment_readiness_status'),
+      ('public', 'marketplace_order_fulfillment_readiness_item_type'),
+      ('public', 'marketplace_order_fulfillment_readiness_event_type')
+  ) as expected(schema_name, type_name)
+  left join pg_type t on t.typname = expected.type_name
+  left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
+  where n.oid is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 021 expected enums: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_order_id_fk'),
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_order_item_id_fk'),
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_actor_profile_id_fk'),
+      ('marketplace_order_fulfillment_readiness_events', 'fulfillment_readiness_events_check_id_fk'),
+      ('marketplace_order_fulfillment_readiness_events', 'fulfillment_readiness_events_order_id_fk'),
+      ('marketplace_order_fulfillment_readiness_events', 'fulfillment_readiness_events_actor_profile_id_fk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'FOREIGN KEY'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 021 expected foreign keys: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_label_nonblank_chk'),
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_blocker_nonblank_chk'),
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_blocked_reason_chk'),
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_reviewed_status_chk'),
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_due_after_created_chk'),
+      ('marketplace_order_fulfillment_readiness_checks', 'fulfillment_readiness_checks_metadata_object_chk'),
+      ('marketplace_order_fulfillment_readiness_events', 'fulfillment_readiness_events_status_change_chk'),
+      ('marketplace_order_fulfillment_readiness_events', 'fulfillment_readiness_events_note_nonblank_chk'),
+      ('marketplace_order_fulfillment_readiness_events', 'fulfillment_readiness_events_metadata_object_chk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'CHECK'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 021 expected check constraints: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('fulfillment_readiness_checks_active_item_idx'),
+      ('fulfillment_readiness_checks_active_order_idx'),
+      ('fulfillment_readiness_checks_order_id_idx'),
+      ('fulfillment_readiness_checks_order_item_id_idx'),
+      ('fulfillment_readiness_checks_actor_profile_id_idx'),
+      ('fulfillment_readiness_checks_item_type_idx'),
+      ('fulfillment_readiness_checks_status_idx'),
+      ('fulfillment_readiness_checks_is_required_idx'),
+      ('fulfillment_readiness_checks_due_at_idx'),
+      ('fulfillment_readiness_checks_created_at_idx'),
+      ('fulfillment_readiness_events_check_id_idx'),
+      ('fulfillment_readiness_events_order_id_idx'),
+      ('fulfillment_readiness_events_actor_profile_id_idx'),
+      ('fulfillment_readiness_events_event_type_idx'),
+      ('fulfillment_readiness_events_previous_status_idx'),
+      ('fulfillment_readiness_events_new_status_idx'),
+      ('fulfillment_readiness_events_created_at_idx')
+  ) as expected(index_name)
+  left join pg_indexes i
+    on i.schemaname = 'public'
+   and i.indexname = expected.index_name
+  where i.indexname is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 021 expected indexes: %', missing_count;
+  end if;
+end
+$$;
