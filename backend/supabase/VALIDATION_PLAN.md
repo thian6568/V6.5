@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0031)
+# Backend DB Validation Plan (Migrations 0001-0032)
 
-This plan validates Migration 001 through Migration 031, implemented in files 0001 through 0032, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 032, implemented in files 0001 through 0033, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -36,6 +36,7 @@ This plan validates Migration 001 through Migration 031, implemented in files 00
 - `0030_migration_029_order_retention_review_foundation.sql`
 - `0031_migration_030_order_retention_finalization_foundation.sql`
 - `0032_migration_031_order_retention_disposition_foundation.sql`
+- `0033_migration_032_order_retention_disposition_evidence_foundation.sql`
 
 ## Goals
 
@@ -51,22 +52,22 @@ This plan validates Migration 001 through Migration 031, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 031 coverage
+## Migration 032 coverage
 
-Migration 031 validates the backend foundation for order retention disposition records and order retention disposition event tracking after retention finalization.
+Migration 032 validates the backend foundation for order retention disposition evidence records and order retention disposition evidence event tracking after retention disposition.
 
 It adds and validates:
 
-- `public.marketplace_order_retention_disposition_status`
-- `public.marketplace_order_retention_disposition_reason`
-- `public.marketplace_order_retention_disposition_event_type`
-- `public.marketplace_order_retention_disposition_actor_role`
-- `public.marketplace_order_retention_disposition_records`
-- `public.marketplace_order_retention_disposition_events`
+- `public.marketplace_order_retention_disposition_evidence_status`
+- `public.marketplace_order_retention_disposition_evidence_type`
+- `public.marketplace_order_retention_disposition_evidence_event_type`
+- `public.marketplace_order_retention_disposition_evidence_actor_role`
+- `public.marketplace_order_retention_disposition_evidence_records`
+- `public.marketplace_order_retention_disposition_evidence_events`
 
-## Migration 031 guardrails
+## Migration 032 guardrails
 
-Migration 031 must remain backend-only and must not introduce unrelated platform logic.
+Migration 032 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
@@ -99,7 +100,7 @@ Expected validation behavior:
 
 1. Create or reset the local validation database.
 2. Bootstrap the local auth-compatible schema.
-3. Apply migrations `0001` through `0032` in order.
+3. Apply migrations `0001` through `0033` in order.
 4. Run assertion checks from `backend/supabase/tests/001_assert_migration_002.sql`.
 5. Fail fast if any expected table, enum, foreign key, check constraint, unique constraint, or index is missing.
 
@@ -144,10 +145,10 @@ If these are not installed locally, full validation should be completed by GitHu
 Before merge, confirm:
 
 - exactly 5 files are changed
-- migration file exists for Migration 031
-- DB assertion file includes Migration 031 checks
-- workflow validates migrations `0001-0032`
-- validation plan documents Migration 031
+- migration file exists for Migration 032
+- DB assertion file includes Migration 032 checks
+- workflow validates migrations `0001-0033`
+- validation plan documents Migration 032
 - GitHub Actions passes
 - no frontend/UI files are changed
 - no payment gateway files are changed
@@ -160,7 +161,7 @@ Before merge, confirm:
 This PR should contain exactly these 5 changed files:
 
 ```text
-backend/supabase/migrations/0032_migration_031_order_retention_disposition_foundation.sql
+backend/supabase/migrations/0033_migration_032_order_retention_disposition_evidence_foundation.sql
 backend/supabase/tests/001_assert_migration_002.sql
 scripts/db_validate_migrations.sh
 .github/workflows/backend-db-validation.yml
