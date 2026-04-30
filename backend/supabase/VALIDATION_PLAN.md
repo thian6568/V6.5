@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0021)
+# Backend DB Validation Plan (Migrations 0001-0022)
 
-This plan validates Migration 001 through Migration 021, implemented in files 0001 through 0022, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 022, implemented in files 0001 through 0023, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -26,6 +26,7 @@ This plan validates Migration 001 through Migration 021, implemented in files 00
 - `0020_migration_019_order_finalization_foundation.sql`
 - `0021_migration_020_order_status_lifecycle_foundation.sql`
 - `0022_migration_021_order_fulfillment_readiness_foundation.sql`
+- `0023_migration_022_order_handover_foundation.sql`
 
 ## Goals
 
@@ -41,21 +42,21 @@ This plan validates Migration 001 through Migration 021, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 021 coverage
+## Migration 022 coverage
 
-Migration 021 validates the backend foundation for order fulfillment readiness checks and readiness event tracking after order status lifecycle.
+Migration 022 validates the backend foundation for order handover records and handover event tracking after fulfillment readiness.
 
 It adds and validates:
 
-- `public.marketplace_order_fulfillment_readiness_status`
-- `public.marketplace_order_fulfillment_readiness_item_type`
-- `public.marketplace_order_fulfillment_readiness_event_type`
-- `public.marketplace_order_fulfillment_readiness_checks`
-- `public.marketplace_order_fulfillment_readiness_events`
+- `public.marketplace_order_handover_status`
+- `public.marketplace_order_handover_event_type`
+- `public.marketplace_order_handover_actor_role`
+- `public.marketplace_order_handover_records`
+- `public.marketplace_order_handover_events`
 
-## Migration 021 guardrails
+## Migration 022 guardrails
 
-Migration 021 must remain backend-only and must not introduce unrelated platform logic.
+Migration 022 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
@@ -82,3 +83,76 @@ Run:
 
 ```bash
 bash scripts/db_validate_migrations.sh
+```
+
+Expected validation behavior:
+
+1. Create or reset the local validation database.
+2. Bootstrap the local auth-compatible schema.
+3. Apply migrations `0001` through `0023` in order.
+4. Run assertion checks from `backend/supabase/tests/001_assert_migration_002.sql`.
+5. Fail fast if any expected table, enum, foreign key, check constraint, unique constraint, or index is missing.
+
+## GitHub Actions validation
+
+The workflow file is:
+
+```text
+.github/workflows/backend-db-validation.yml
+```
+
+The workflow runs on:
+
+- manual dispatch
+- push changes touching migration validation files
+- pull request changes touching migration validation files
+
+The workflow uses PostgreSQL 16 and runs:
+
+```bash
+bash scripts/db_validate_migrations.sh
+```
+
+## Local testing notes
+
+Syntax check:
+
+```bash
+bash -n scripts/db_validate_migrations.sh
+```
+
+Full local DB validation requires PostgreSQL tools such as:
+
+- `createdb`
+- `dropdb`
+- `psql`
+
+If these are not installed locally, full validation should be completed by GitHub Actions.
+
+## Pull request acceptance checklist
+
+Before merge, confirm:
+
+- exactly 5 files are changed
+- migration file exists for Migration 022
+- DB assertion file includes Migration 022 checks
+- workflow validates migrations `0001-0023`
+- validation plan documents Migration 022
+- GitHub Actions passes
+- no frontend/UI files are changed
+- no payment gateway files are changed
+- no crypto files are changed
+- no escrow release logic is changed
+- no AI/bot/agent files are changed
+
+## Expected changed files for this PR
+
+This PR should contain exactly these 5 changed files:
+
+```text
+backend/supabase/migrations/0023_migration_022_order_handover_foundation.sql
+backend/supabase/tests/001_assert_migration_002.sql
+scripts/db_validate_migrations.sh
+.github/workflows/backend-db-validation.yml
+backend/supabase/VALIDATION_PLAN.md
+```
