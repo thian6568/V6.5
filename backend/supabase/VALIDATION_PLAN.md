@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0020)
+# Backend DB Validation Plan (Migrations 0001-0021)
 
-This plan validates Migration 001 through Migration 020, implemented in files 0001 through 0021, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 021, implemented in files 0001 through 0022, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -25,6 +25,7 @@ This plan validates Migration 001 through Migration 020, implemented in files 00
 - `0019_migration_018_checkout_order_draft_conversion.sql`
 - `0020_migration_019_order_finalization_foundation.sql`
 - `0021_migration_020_order_status_lifecycle_foundation.sql`
+- `0022_migration_021_order_fulfillment_readiness_foundation.sql`
 
 ## Goals
 
@@ -40,20 +41,21 @@ This plan validates Migration 001 through Migration 020, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 020 coverage
+## Migration 021 coverage
 
-Migration 020 validates the backend foundation for order status lifecycle rules and event tracking after order finalization.
+Migration 021 validates the backend foundation for order fulfillment readiness checks and readiness event tracking after order status lifecycle.
 
 It adds and validates:
 
-- `public.marketplace_order_status_lifecycle_event_type`
-- `public.marketplace_order_status_change_source`
-- `public.marketplace_order_status_lifecycle_rules`
-- `public.marketplace_order_status_lifecycle_events`
+- `public.marketplace_order_fulfillment_readiness_status`
+- `public.marketplace_order_fulfillment_readiness_item_type`
+- `public.marketplace_order_fulfillment_readiness_event_type`
+- `public.marketplace_order_fulfillment_readiness_checks`
+- `public.marketplace_order_fulfillment_readiness_events`
 
-## Migration 020 guardrails
+## Migration 021 guardrails
 
-Migration 020 must remain backend-only and must not introduce unrelated platform logic.
+Migration 021 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
