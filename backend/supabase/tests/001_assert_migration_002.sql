@@ -1620,3 +1620,152 @@ begin
   end if;
 end
 $$;
+-- Migration 026 order post-closure audit foundation checks.
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_post_closure_audit_records'),
+      ('public', 'marketplace_order_post_closure_audit_events')
+  ) as expected(schema_name, table_name)
+  left join information_schema.tables t
+    on t.table_schema = expected.schema_name
+   and t.table_name = expected.table_name
+  where t.table_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 026 expected tables: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('public', 'marketplace_order_post_closure_audit_status'),
+      ('public', 'marketplace_order_post_closure_audit_type'),
+      ('public', 'marketplace_order_post_closure_audit_event_type'),
+      ('public', 'marketplace_order_post_closure_audit_actor_role')
+  ) as expected(schema_name, type_name)
+  left join pg_type t on t.typname = expected.type_name
+  left join pg_namespace n on n.oid = t.typnamespace and n.nspname = expected.schema_name
+  where n.oid is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 026 expected enums: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_order_id_fk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_closure_id_fk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_evidence_id_fk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_initiated_by_id_fk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_reviewed_by_id_fk'),
+      ('marketplace_order_post_closure_audit_events', 'post_closure_audit_events_record_id_fk'),
+      ('marketplace_order_post_closure_audit_events', 'post_closure_audit_events_order_id_fk'),
+      ('marketplace_order_post_closure_audit_events', 'post_closure_audit_events_actor_profile_id_fk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'FOREIGN KEY'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 026 expected foreign keys: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_reference_nonblank_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_summary_nonblank_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_resolution_nonblank_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_action_note_nonblank_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_cancellation_nonblank_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_action_required_note_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_cancelled_reason_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_started_status_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_resolved_status_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_closed_status_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_cancelled_status_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_terminal_exclusive_chk'),
+      ('marketplace_order_post_closure_audit_records', 'post_closure_audit_records_metadata_object_chk'),
+      ('marketplace_order_post_closure_audit_events', 'post_closure_audit_events_status_change_chk'),
+      ('marketplace_order_post_closure_audit_events', 'post_closure_audit_events_note_nonblank_chk'),
+      ('marketplace_order_post_closure_audit_events', 'post_closure_audit_events_manual_note_required_chk'),
+      ('marketplace_order_post_closure_audit_events', 'post_closure_audit_events_metadata_object_chk')
+  ) as expected(table_name, constraint_name)
+  left join information_schema.table_constraints tc
+    on tc.table_schema = 'public'
+   and tc.table_name = expected.table_name
+   and tc.constraint_name = expected.constraint_name
+   and tc.constraint_type = 'CHECK'
+  where tc.constraint_name is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 026 expected check constraints: %', missing_count;
+  end if;
+end
+$$;
+
+do $$
+declare
+  missing_count integer;
+begin
+  select count(*) into missing_count
+  from (
+    values
+      ('post_closure_audit_records_reference_key'),
+      ('post_closure_audit_records_one_active_per_order_idx'),
+      ('post_closure_audit_records_order_id_idx'),
+      ('post_closure_audit_records_closure_id_idx'),
+      ('post_closure_audit_records_evidence_id_idx'),
+      ('post_closure_audit_records_initiated_by_id_idx'),
+      ('post_closure_audit_records_reviewed_by_id_idx'),
+      ('post_closure_audit_records_status_idx'),
+      ('post_closure_audit_records_type_idx'),
+      ('post_closure_audit_records_review_started_at_idx'),
+      ('post_closure_audit_records_resolved_at_idx'),
+      ('post_closure_audit_records_created_at_idx'),
+      ('post_closure_audit_events_record_id_idx'),
+      ('post_closure_audit_events_order_id_idx'),
+      ('post_closure_audit_events_actor_profile_id_idx'),
+      ('post_closure_audit_events_actor_role_idx'),
+      ('post_closure_audit_events_event_type_idx'),
+      ('post_closure_audit_events_previous_status_idx'),
+      ('post_closure_audit_events_new_status_idx'),
+      ('post_closure_audit_events_created_at_idx')
+  ) as expected(index_name)
+  left join pg_indexes i
+    on i.schemaname = 'public'
+   and i.indexname = expected.index_name
+  where i.indexname is null;
+
+  if missing_count > 0 then
+    raise exception 'Missing Migration 026 expected indexes: %', missing_count;
+  end if;
+end
+$$;
