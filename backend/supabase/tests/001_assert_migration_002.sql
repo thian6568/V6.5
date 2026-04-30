@@ -2500,7 +2500,7 @@ $$;
 
     values
       ('order_retention_disposition_evidence_records_one_active_per_ord'),
-      (order_retention_disposition_evidence_events_actor_profile_id_id'),
+     
 -- Migration 032 order retention disposition evidence foundation checks.
 do $$
 declare
@@ -2616,10 +2616,9 @@ declare
 begin
   select count(*) into missing_count
   from (
-    values
+       values
       ('order_retention_disposition_evidence_records_reference_key'),
-      ('order_retention_disposition_evidence_records_one_active_per_order_idx'),
-
+      ('order_retention_disposition_evidence_records_one_active_per_ord'),
       ('order_retention_disposition_evidence_records_order_id_idx'),
       ('order_retention_disposition_evidence_records_disposition_id_idx'),
       ('order_retention_disposition_evidence_records_retention_id_idx'),
@@ -2631,16 +2630,12 @@ begin
       ('order_retention_disposition_evidence_records_created_at_idx'),
       ('order_retention_disposition_evidence_events_record_id_idx'),
       ('order_retention_disposition_evidence_events_order_id_idx'),
-
       ('order_retention_disposition_evidence_events_actor_profile_id_id'),
-      ('order_retention_disposition_evidence_events_actor_profile_id_idx'),
-
       ('order_retention_disposition_evidence_events_actor_role_idx'),
       ('order_retention_disposition_evidence_events_event_type_idx'),
       ('order_retention_disposition_evidence_events_previous_status_idx'),
       ('order_retention_disposition_evidence_events_new_status_idx'),
       ('order_retention_disposition_evidence_events_created_at_idx')
-
 
   ) as expected(index_name)
   left join pg_indexes i
