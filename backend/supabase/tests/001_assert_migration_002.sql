@@ -1267,7 +1267,7 @@ begin
   select count(*) into missing_count
   from (
     values
-         values
+   
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_reference_nonblank'),
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_uri_nonblank_chk'),
       ('marketplace_order_retention_disposition_evidence_records', 'order_retention_disposition_evidence_records_hash_nonblank_chk'),
