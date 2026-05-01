@@ -1,6 +1,6 @@
-# Backend DB Validation Plan (Migrations 0001-0034)
+# Backend DB Validation Plan (Migrations 0001-0035)
 
-This plan validates Migration 001 through Migration 034, implemented in files 0001 through 0035, against a real PostgreSQL/Supabase-compatible database before any next migration work.
+This plan validates Migration 001 through Migration 035, implemented in files 0001 through 0036, against a real PostgreSQL/Supabase-compatible database before any next migration work.
 
 ## Scope
 
@@ -39,6 +39,7 @@ This plan validates Migration 001 through Migration 034, implemented in files 00
 - `0033_migration_032_order_retention_disposition_evidence_foundation.sql`
 - `0034_migration_033_order_retention_disposition_export_foundation.sql`
 - `0035_migration_034_order_retention_disposition_export_delivery_foundation.sql`
+- `0036_migration_035_order_retention_disposition_export_delivery_review_foundation.sql`
 
 ## Goals
 
@@ -54,22 +55,22 @@ This plan validates Migration 001 through Migration 034, implemented in files 00
    - no VR-only artwork table
    - no second upload identity path
 
-## Migration 034 coverage
+## Migration 035 coverage
 
-Migration 034 validates the backend foundation for order retention disposition export delivery records and export delivery event tracking after export generation.
+Migration 035 validates the backend foundation for order retention disposition export delivery review records and export delivery review event tracking after export delivery.
 
 It adds and validates:
 
-- `public.marketplace_order_ret_disp_export_delivery_status`
-- `public.marketplace_order_ret_disp_export_delivery_method`
-- `public.marketplace_order_ret_disp_export_delivery_event`
-- `public.marketplace_order_ret_disp_export_delivery_actor`
-- `public.marketplace_order_retention_disposition_export_delivery_records`
-- `public.marketplace_order_retention_disposition_export_delivery_events`
+- `public.marketplace_order_ret_disp_export_delivery_review_status`
+- `public.marketplace_order_ret_disp_export_delivery_review_result`
+- `public.marketplace_order_ret_disp_export_delivery_review_event`
+- `public.marketplace_order_ret_disp_export_delivery_review_actor`
+- `public.marketplace_order_ret_disp_export_delivery_review_records`
+- `public.marketplace_order_ret_disp_export_delivery_review_events`
 
-## Migration 034 guardrails
+## Migration 035 guardrails
 
-Migration 034 must remain backend-only and must not introduce unrelated platform logic.
+Migration 035 must remain backend-only and must not introduce unrelated platform logic.
 
 Guardrails preserved:
 
@@ -102,7 +103,7 @@ Expected validation behavior:
 
 1. Create or reset the local validation database.
 2. Bootstrap the local auth-compatible schema.
-3. Apply migrations `0001` through `0035` in order.
+3. Apply migrations `0001` through `0036` in order.
 4. Run assertion checks from `backend/supabase/tests/001_assert_migration_002.sql`.
 5. Fail fast if any expected table, enum, foreign key, check constraint, unique constraint, or index is missing.
 
@@ -147,10 +148,10 @@ If these are not installed locally, full validation should be completed by GitHu
 Before merge, confirm:
 
 - exactly 5 files are changed
-- migration file exists for Migration 034
-- DB assertion file includes Migration 034 checks
-- workflow validates migrations `0001-0035`
-- validation plan documents Migration 034
+- migration file exists for Migration 035
+- DB assertion file includes Migration 035 checks
+- workflow validates migrations `0001-0036`
+- validation plan documents Migration 035
 - GitHub Actions passes
 - no frontend/UI files are changed
 - no payment gateway files are changed
@@ -163,7 +164,7 @@ Before merge, confirm:
 This PR should contain exactly these 5 changed files:
 
 ```text
-backend/supabase/migrations/0035_migration_034_order_retention_disposition_export_delivery_foundation.sql
+backend/supabase/migrations/0036_migration_035_order_retention_disposition_export_delivery_review_foundation.sql
 backend/supabase/tests/001_assert_migration_002.sql
 scripts/db_validate_migrations.sh
 .github/workflows/backend-db-validation.yml
