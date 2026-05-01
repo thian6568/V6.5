@@ -3439,5 +3439,4 @@ begin
   end if;
 end
 $$;
-end
-$$;
+
