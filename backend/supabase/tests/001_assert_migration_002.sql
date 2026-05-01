@@ -2801,4 +2801,5 @@ begin
   end if;
 end
 $$;
+Append Migration 034 assertions
 
