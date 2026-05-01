@@ -21,7 +21,7 @@ apply_migrations() {
   echo "==> Bootstrapping local auth schema"
   "${PSQL[@]}" -d "$DB_NAME" -f "$TESTS_DIR/000_bootstrap_auth.sql"
 
-  echo "==> Applying migrations 0001-0037"
+  echo "==> Applying migrations 0001-0038"
   "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0001_enum_types.sql"
   "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0002_migration_001_foundation.sql"
   "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0003_migration_002_artwork_core.sql"
@@ -59,6 +59,7 @@ apply_migrations() {
   "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0035_migration_034_order_retention_disposition_export_delivery_foundation.sql"
   "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0036_migration_035_order_retention_disposition_export_delivery_review_foundation.sql"
   "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0037_migration_036_order_retention_disposition_export_delivery_review_approval_foundation.sql"
+  "${PSQL[@]}" -d "$DB_NAME" -f "$MIGRATIONS_DIR/0038_migration_037_order_retention_disposition_export_delivery_review_release_foundation.sql"
 }
 
 run_assertions() {
@@ -85,7 +86,7 @@ main() {
   apply_migrations
   run_assertions
 
-  echo "SUCCESS: migrations 0001-0037 and Migration 008/009/010/011/012/013/014/015/016/017/018/019/020/021/022/023/024/025/026/027/028/029/030/031/032/033/034/035/036 assertions validated."
+  echo "SUCCESS: migrations 0001-0038 and Migration 008/009/010/011/012/013/014/015/016/017/018/019/020/021/022/023/024/025/026/027/028/029/030/031/032/033/034/035/036/037 assertions validated."
 }
 
 main "$@"
