@@ -3275,6 +3275,8 @@ begin
   if missing_count > 0 then
     raise exception 'Missing Migration 036 expected indexes: %', missing_count;
   end if;
+end
+$$;
 -- Migration 037 order retention disposition export delivery review release foundation checks.
 do $$
 declare
